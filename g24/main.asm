@@ -1,6 +1,6 @@
 include Irvine32.inc
 .data 
-String byte "Hello World!",0 
+String byte "Test",0 
 .code 
 main PROC 
 mov edx,offset String 
