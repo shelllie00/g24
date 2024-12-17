@@ -1,8 +1,8 @@
-Microsoft (R) Macro Assembler Version 14.42.34435.0	    12/13/24 22:34:53
+Microsoft (R) Macro Assembler Version 14.42.34435.0	    12/17/24 21:43:03
 main.asm						     Page 1 - 1
 
 
-				include Irvine32.inc
+				INCLUDE Irvine32.inc
 			      C ; Include file for Irvine32.lib             (Irvine32.inc)
 			      C 
 			      C ;OPTION CASEMAP:NONE		; optional: make identifiers case-sensitive
@@ -20,18 +20,192 @@ main.asm						     Page 1 - 1
 			      C .NOLIST
 			      C .LIST
 			      C 
- 00000000			.data 
- 00000000 48 65 6C 6C 6F	String byte "Hello World!",0 
-	   20 57 6F 72 6C
-	   64 21 00
- 00000000			.code 
- 00000000			main PROC 
- 00000000  BA 00000000 R	mov edx,offset String 
- 00000005  E8 00000000 E	call writestring 
-				invoke ExitProcess,0 
- 00000011			main ENDP 
+
+ 00000000			.data
+				; Define BoxSize
+ = 00000005			BoxWidth = 5
+ = 00000005			BoxHeight = 5
+ = 00000064			ScreenWidth = 100
+ = 00000019			ScreenHeight = 25
+
+				; Define game objects
+ 00000000 20 20 41 00		airplaneTop BYTE ' ', ' ','A',0
+ 00000004 20 2F 20 5C 5C	airplaneMid1 BYTE  ' ', '/',' ','\\',0
+	   00
+ 0000000A 20 7C 5F 7C 00	airplaneMid2 BYTE  ' ', '|','_','|',0
+ 0000000F 2F 20 20 20 5C	airplaneBot BYTE '/',' ',' ',' ','\\',0
+	   5C 00
+
+ 00000016 5E			bullet BYTE '^'
+ 00000017 4F			enemy BYTE 'O'
+
+				;define attributes
+ 00000018 0F			airplaneAttr BYTE 0Fh
+
+				; Define positions
+ 00000019 0032 0017		initialAirplanePos COORD <ScreenWidth / 2, ScreenHeight - 2>
+ 0000001D 0032 0017		airplanePos COORD <ScreenWidth / 2, ScreenHeight - 2>
+ 00000021 0000 0000		bulletPos COORD <0, 0>
+ 00000025 0032 0001		enemyPos COORD <ScreenWidth / 2, 1>
+ 00000029 005A 0000		initialLifePos COORD <ScreenWidth - 10, 0>
+ 0000002D 005A 0000		lifePos COORD <ScreenWidth - 10, 0>
+
+				; Define others
+ 00000031 00000000		outputHandle DWORD 0
+ 00000035 00000000		bytesWritten DWORD 0
+ 00000039 00000000		count DWORD 0
+ 0000003D 00000000		key DWORD ?
+ 00000041 00000000		randomX DWORD ?
+
+				; Define scores and lives
+ 00000045 00000000		score DWORD 0
+ 00000049 00000003		life DWORD 3
+ 0000004D 03 00			lifeSymbol BYTE 03h,0
+
+
+
+
+ 00000000			.code
+				SetConsoleOutputCP PROTO STDCALL :DWORD
+				GetAsyncKeyState PROTO STDCALL :DWORD
+
+ 00000000			main PROC
+				    ; Initialize console
+				    INVOKE SetConsoleOutputCP, 65001 ; Set console output to UTF-8
+				    INVOKE GetStdHandle, STD_OUTPUT_HANDLE
+ 00000011  A3 00000031 R	    mov outputHandle, eax
+ 00000016  E8 00000000 E	    call Clrscr
+
+				    ; Main game loop
+ 0000001B			    gameLoop:
+				        ; Clear screen
+ 0000001B  E8 00000000 E	        call Clrscr
+
+				       ; Draw life
+ 00000020  66| A1		       mov ax, initialLifePos.x
+	   00000029 R
+ 00000026  66| A3		       mov lifePos.x, ax
+	   0000002D R
+ 0000002C  66| A1		       mov ax, initialLifePos.y
+	   0000002B R
+ 00000032  66| A3		       mov lifePos.y, ax
+	   0000002F R
+
+ 00000038  8B 0D 00000049 R	       mov ecx, life ; set loop counter
+ 0000003E			       drawLifeLoop:              
+				       INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR lifeSymbol, 1, lifePos, ADDR count
+ 0000005B  66| FF 05		       inc lifePos.x
+	   0000002D R
+ 00000062  E2 DA		       loop drawLifeLoop
+
+				       
+
+				       ; Draw airplane
+				        INVOKE WriteConsoleOutputCharacter,
+				        outputHandle, ADDR airplaneBot, 5, airplanePos, ADDR count
+ 00000081  66| FF 0D		        dec airplanePos.y
+	   0000001F R
+
+				        INVOKE WriteConsoleOutputCharacter,
+				        outputHandle, ADDR airplaneMid2, 4, airplanePos, ADDR count
+ 000000A5  66| FF 0D		        dec airplanePos.y
+	   0000001F R
+
+				        INVOKE WriteConsoleOutputCharacter,
+				        outputHandle, ADDR airplaneMid1, 4, airplanePos, ADDR count
+ 000000C9  66| FF 0D		        dec airplanePos.y
+	   0000001F R
+
+				        INVOKE WriteConsoleOutputCharacter,
+				        outputHandle, ADDR airplaneTop, 3, airplanePos, ADDR count
+ 000000ED  66| FF 0D		        dec airplanePos.y
+	   0000001F R
+
+ 000000F4  66| 83 05		        add airplanePos.y, 4
+	   0000001F R 04
+				        
+				        ; Draw bullet if active
+ 000000FC  66| 83 3D		        cmp bulletPos.y, 0
+	   00000023 R 00
+ 00000104  74 1D		        je skipBullet
+				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR bullet, 1, bulletPos, ADDR count
+ 00000123			        skipBullet:
+
+				        ; Draw enemy
+				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemy, 1, enemyPos, ADDR count
+
+				        ; Handle input
+				        INVOKE GetAsyncKeyState, VK_LEFT
+ 00000147  66| A9 8000		        test ax, 8000h
+ 0000014B  74 09		        jz checkRight
+ 0000014D  66| FF 0D		        dec airplanePos.x
+	   0000001D R
+ 00000154  EB 16		        jmp checkShoot
+
+ 00000156			        checkRight:
+				        INVOKE GetAsyncKeyState, VK_RIGHT
+ 0000015D  66| A9 8000		        test ax, 8000h
+ 00000161  74 09		        jz checkShoot
+ 00000163  66| FF 05		        inc airplanePos.x
+	   0000001D R
+ 0000016A  EB 00		        jmp checkShoot
+
+ 0000016C			        checkShoot:
+				        INVOKE GetAsyncKeyState, VK_SPACE
+ 00000173  66| A9 8000		        test ax, 8000h
+ 00000177  74 2B		        jz updateBullet
+ 00000179  66| 8B 1D		        mov bx, airplanePos.x
+	   0000001D R
+ 00000180  66| 83 C3 02		        add bx,2 ; Adjust bullet position x
+ 00000184  66| 89 1D		        mov bulletPos.x, bx
+	   00000021 R
+ 0000018B  66| 8B 1D		        mov bx, airplanePos.y
+	   0000001F R
+ 00000192  66| 83 EB 02		        sub bx, 2 ; Adjust bullet position y
+ 00000196  66| 89 1D		        mov bulletPos.y, bx
+	   00000023 R
+ 0000019D  66| FF 0D		        dec bulletPos.y
+	   00000023 R
+
+ 000001A4			        updateBullet:
+				        ; Update bullet position
+ 000001A4  66| 83 3D		        cmp bulletPos.y, 0
+	   00000023 R 00
+ 000001AC  74 07		        je endUpdate
+ 000001AE  66| FF 0D		        dec bulletPos.y
+	   00000023 R
+
+ 000001B5			        endUpdate:
+				        ; Delay for a short period
+				        INVOKE Sleep, 50
+
+				        ; Check for collision with enemy
+ 000001BC  66| 8B 1D		        mov bx, bulletPos.x
+	   00000021 R
+ 000001C3  66| 3B 1D		        cmp bx, enemyPos.x
+	   00000025 R
+ 000001CA  0F 85 FFFFFE4B	        jne gameLoop
+ 000001D0  66| 8B 1D		        mov bx, bulletPos.y
+	   00000023 R
+ 000001D7  66| 3B 1D		        cmp bx, enemyPos.y
+	   00000027 R
+ 000001DE  0F 85 FFFFFE37	        jne gameLoop
+
+				        ; If collision, reset enemy position with random x
+ 000001E4  66| B8 0064		        mov ax, ScreenWidth
+				        INVOKE RandomRange
+ 000001ED  66| A3		        mov enemyPos.x, ax
+	   00000025 R
+ 000001F3  66| C7 05		        mov enemyPos.y, 1
+	   00000027 R
+	   0001
+
+ 000001FC  E9 FFFFFE1A		        jmp gameLoop
+
+				    exit
+ 00000208			main ENDP
 				END main
-Microsoft (R) Macro Assembler Version 14.42.34435.0	    12/13/24 22:34:53
+Microsoft (R) Macro Assembler Version 14.42.34435.0	    12/17/24 21:43:03
 main.asm						     Symbols 2 - 1
 
 
@@ -125,8 +299,8 @@ Segments and Groups:
 
 FLAT . . . . . . . . . . . . . .	GROUP
 STACK  . . . . . . . . . . . . .	32 Bit	 00001000 Para	  Stack	  'STACK'	 
-_DATA  . . . . . . . . . . . . .	32 Bit	 0000000D Para	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 00000011 Para	  Public  'CODE'	
+_DATA  . . . . . . . . . . . . .	32 Bit	 0000004F Para	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 00000208 Para	  Public  'CODE'	
 
 
 Procedures, parameters, and locals:
@@ -147,6 +321,7 @@ FileTimeToDosDateTime  . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 FileTimeToSystemTime . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 FlushConsoleInputBuffer  . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 FormatMessageA . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetAsyncKeyState . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 GetCommandLineA  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 GetCommandTail . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 GetConsoleCP . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -199,6 +374,7 @@ ReadString . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 SetConsoleCursorInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 SetConsoleCursorPosition . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 SetConsoleMode . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleOutputCP . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 SetConsoleScreenBufferSize . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 SetConsoleTextAttribute  . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 SetConsoleTitleA . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -233,7 +409,14 @@ WriteStackFrame  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 WriteString  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteToFile  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteWindowsMsg  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-main . . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000011 Public STDCALL
+main . . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000208 Public STDCALL
+  gameLoop . . . . . . . . . . .	L Near	 0000001B _TEXT	
+  drawLifeLoop . . . . . . . . .	L Near	 0000003E _TEXT	
+  skipBullet . . . . . . . . . .	L Near	 00000123 _TEXT	
+  checkRight . . . . . . . . . .	L Near	 00000156 _TEXT	
+  checkShoot . . . . . . . . . .	L Near	 0000016C _TEXT	
+  updateBullet . . . . . . . . .	L Near	 000001A4 _TEXT	
+  endUpdate  . . . . . . . . . .	L Near	 000001B5 _TEXT	
 printf . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 scanf  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 wsprintfA  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
@@ -253,6 +436,8 @@ Symbols:
 @fardata . . . . . . . . . . . .	Text   	 FLAT
 @stack . . . . . . . . . . . . .	Text   	 FLAT
 ALT_MASK . . . . . . . . . . . .	Number	 00000003h   
+BoxHeight  . . . . . . . . . . .	Number	 00000005h   
+BoxWidth . . . . . . . . . . . .	Number	 00000005h   
 CAPSLOCK_ON  . . . . . . . . . .	Number	 00000080h   
 CREATE_ALWAYS  . . . . . . . . .	Number	 00000002h   
 CREATE_NEW . . . . . . . . . . .	Number	 00000001h   
@@ -367,8 +552,9 @@ SHIFT_PRESSED  . . . . . . . . .	Number	 00000010h
 STD_ERROR_HANDLE . . . . . . . .	Number	 -0000000Ch   
 STD_INPUT_HANDLE . . . . . . . .	Number	 -0000000Ah   
 STD_OUTPUT_HANDLE  . . . . . . .	Number	 -0000000Bh   
+ScreenHeight . . . . . . . . . .	Number	 00000019h   
+ScreenWidth  . . . . . . . . . .	Number	 00000064h   
 SetConsoleTitle  . . . . . . . .	Text   	 SetConsoleTitleA
-String . . . . . . . . . . . . .	Byte	 00000000 _DATA	
 TAB  . . . . . . . . . . . . . .	Number	 00000009h   
 TRUE . . . . . . . . . . . . . .	Number	 00000001h   
 TRUNCATE_EXISTING  . . . . . . .	Number	 00000005h   
@@ -453,13 +639,31 @@ VK_UP  . . . . . . . . . . . . .	Number	 00000026h
 WINDOW_BUFFER_SIZE_EVENT . . . .	Number	 00000004h   
 WriteConsoleOutputCharacter  . .	Text   	 WriteConsoleOutputCharacterA
 WriteConsole . . . . . . . . . .	Text   	 WriteConsoleA
+airplaneAttr . . . . . . . . . .	Byte	 00000018 _DATA	
+airplaneBot  . . . . . . . . . .	Byte	 0000000F _DATA	
+airplaneMid1 . . . . . . . . . .	Byte	 00000004 _DATA	
+airplaneMid2 . . . . . . . . . .	Byte	 0000000A _DATA	
+airplanePos  . . . . . . . . . .	COORD	 0000001D _DATA	
+airplaneTop  . . . . . . . . . .	Byte	 00000000 _DATA	
 black  . . . . . . . . . . . . .	Number	 00000000h   
 blue . . . . . . . . . . . . . .	Number	 00000001h   
 brown  . . . . . . . . . . . . .	Number	 00000006h   
+bulletPos  . . . . . . . . . . .	COORD	 00000021 _DATA	
+bullet . . . . . . . . . . . . .	Byte	 00000016 _DATA	
+bytesWritten . . . . . . . . . .	DWord	 00000035 _DATA	
+count  . . . . . . . . . . . . .	DWord	 00000039 _DATA	
 cyan . . . . . . . . . . . . . .	Number	 00000003h   
+enemyPos . . . . . . . . . . . .	COORD	 00000025 _DATA	
+enemy  . . . . . . . . . . . . .	Byte	 00000017 _DATA	
 exit . . . . . . . . . . . . . .	Text   	 INVOKE ExitProcess,0
 gray . . . . . . . . . . . . . .	Number	 00000008h   
 green  . . . . . . . . . . . . .	Number	 00000002h   
+initialAirplanePos . . . . . . .	COORD	 00000019 _DATA	
+initialLifePos . . . . . . . . .	COORD	 00000029 _DATA	
+key  . . . . . . . . . . . . . .	DWord	 0000003D _DATA	
+lifePos  . . . . . . . . . . . .	COORD	 0000002D _DATA	
+lifeSymbol . . . . . . . . . . .	Byte	 0000004D _DATA	
+life . . . . . . . . . . . . . .	DWord	 00000049 _DATA	
 lightBlue  . . . . . . . . . . .	Number	 00000009h   
 lightCyan  . . . . . . . . . . .	Number	 0000000Bh   
 lightGray  . . . . . . . . . . .	Number	 00000007h   
@@ -467,7 +671,10 @@ lightGreen . . . . . . . . . . .	Number	 0000000Ah
 lightMagenta . . . . . . . . . .	Number	 0000000Dh   
 lightRed . . . . . . . . . . . .	Number	 0000000Ch   
 magenta  . . . . . . . . . . . .	Number	 00000005h   
+outputHandle . . . . . . . . . .	DWord	 00000031 _DATA	
+randomX  . . . . . . . . . . . .	DWord	 00000041 _DATA	
 red  . . . . . . . . . . . . . .	Number	 00000004h   
+score  . . . . . . . . . . . . .	DWord	 00000045 _DATA	
 white  . . . . . . . . . . . . .	Number	 0000000Fh   
 wsprintf . . . . . . . . . . . .	Text   	 wsprintfA
 yellow . . . . . . . . . . . . .	Number	 0000000Eh   
