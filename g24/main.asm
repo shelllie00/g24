@@ -4,14 +4,27 @@ INCLUDE Irvine32.inc
 ; Define BoxSize
 BoxWidth = 5
 BoxHeight = 5
-ScreenWidth = 100
-ScreenHeight = 25
+ScreenWidth = 130
+ScreenHeight = 30
 
 ; Define game objects
-airplaneTop BYTE ' ', ' ','A',0
-airplaneMid1 BYTE  ' ', '/',' ','\\',0
-airplaneMid2 BYTE  ' ', '|','_','|',0
-airplaneBot BYTE '/',' ',' ',' ','\\',0
+
+; Define airplane
+airplaneDraw1 BYTE ' ', ' ', ' ', ' ', ' ', '/', 5ch, 0
+airplaneDraw2 BYTE ' ', ' ', '_', '_', '/', ' ', ' ', 5ch, '_', '_', 0
+airplaneDraw3 BYTE '/', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', 5ch, 0
+airplaneDraw4 BYTE  ' ',' ',' ', ' ', '|', ' ', ' ', '|', 0
+airplaneDraw5 BYTE  ' ',' ', ' ', '/', '_', '|', '|', '_', 5ch, 0
+
+
+;Blueprint to draw a bigger plane (not yet used, maybe used in next chapter?)
+;airplaneBiggerDraw1 BYTE ' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','/',5ch,0
+;airplaneBiggerDraw2 BYTE ' ','_','_','_','_','_','_','_','_','_','_','/',' ',' ',5ch,'_','_','_','_','_','_','_','_','_','_',0
+;airplaneBiggerDraw3 BYTE '/','_','_','_','_','_','_','_','_','_','_','_','_','_','_','_','_','_','_','_','_','_','_','_','_',5ch,0
+;airplaneBiggerDraw4 BYTE ' ',' ',' ','_','_','|','_','_','|','_','/','.','-','-','.',5ch,'_','|','_','_','|','_','_',' ',' ',' ',' ',' ',' ',' ',0
+;airplaneBiggerDraw5 BYTE ' ',' ','/','_','_','|','_','|','_','_','(',' ', '>', '<', ' ',')','_','_','|','_','|','_','_',5ch,' ',' ',' ',' ',' ',' ',0
+;airplaneBiggerDraw6 BYTE ' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','_','/','-','-',5ch,'_',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',0
+;airplaneBiggerDraw7 BYTE ' ',' ',' ',' ',' ',' ',' ',' ',' ','(','/','-','-','-','-',5ch,')',' ',' ',' ',' ',' ',' ',' ',' ',0
 
 bullet BYTE '^'
 enemy BYTE 'O'
@@ -24,8 +37,8 @@ initialAirplanePos COORD <ScreenWidth / 2, ScreenHeight - 2>
 airplanePos COORD <ScreenWidth / 2, ScreenHeight - 2>
 bulletPos COORD <0, 0>
 enemyPos COORD <ScreenWidth / 2, 1>
-initialLifePos COORD <ScreenWidth - 10, 0>
-lifePos COORD <ScreenWidth - 10, 0>
+initialLifePos COORD <ScreenWidth - 10, 5>
+lifePos COORD <ScreenWidth - 10, 5>
 
 ; Define others
 outputHandle DWORD 0
@@ -71,25 +84,28 @@ main PROC
        loop drawLifeLoop
 
        
-
        ; Draw airplane
+       INVOKE WriteConsoleOutputCharacter,
+               outputHandle, ADDR airplaneDraw5, LENGTHOF airplaneDraw5, airplanePos, ADDR count
+        dec airplanePos.y
         INVOKE WriteConsoleOutputCharacter,
-        outputHandle, ADDR airplaneBot, 5, airplanePos, ADDR count
+               outputHandle, ADDR airplaneDraw4, LENGTHOF airplaneDraw4, airplanePos, ADDR count
         dec airplanePos.y
 
         INVOKE WriteConsoleOutputCharacter,
-        outputHandle, ADDR airplaneMid2, 4, airplanePos, ADDR count
+               outputHandle, ADDR airplaneDraw3, LENGTHOF airplaneDraw3, airplanePos, ADDR count
         dec airplanePos.y
 
         INVOKE WriteConsoleOutputCharacter,
-        outputHandle, ADDR airplaneMid1, 4, airplanePos, ADDR count
+               outputHandle, ADDR airplaneDraw2, LENGTHOF airplaneDraw2, airplanePos, ADDR count
         dec airplanePos.y
 
         INVOKE WriteConsoleOutputCharacter,
-        outputHandle, ADDR airplaneTop, 3, airplanePos, ADDR count
+               outputHandle, ADDR airplaneDraw1, LENGTHOF airplaneDraw1, airplanePos, ADDR count
         dec airplanePos.y
 
-        add airplanePos.y, 4
+
+        add airplanePos.y,5;
         
         ; Draw bullet if active
         cmp bulletPos.y, 0
