@@ -2,12 +2,10 @@ INCLUDE Irvine32.inc
 
 .data
 ; Define BoxSize
-BoxWidth = 5
-BoxHeight = 5
+MarginSize = 15 ; Margin size
 ScreenWidth = 130
 ScreenHeight = 30
 
-; Define game objects
 
 ; Define airplane
 airplaneDraw1 BYTE ' ', ' ', ' ', ' ', ' ', '/', 5ch, 0
@@ -26,19 +24,16 @@ airplaneDraw5 BYTE  ' ',' ', ' ', '/', '_', '|', '|', '_', 5ch, 0
 ;airplaneBiggerDraw6 BYTE ' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','_','/','-','-',5ch,'_',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',0
 ;airplaneBiggerDraw7 BYTE ' ',' ',' ',' ',' ',' ',' ',' ',' ','(','/','-','-','-','-',5ch,')',' ',' ',' ',' ',' ',' ',' ',' ',0
 
-bullet BYTE '^'
+bullet BYTE '**'
 enemy BYTE 'O'
 
-;define attributes
-airplaneAttr BYTE 0Fh
 
 ; Define positions
 initialAirplanePos COORD <ScreenWidth / 2, ScreenHeight - 2>
 airplanePos COORD <ScreenWidth / 2, ScreenHeight - 2>
 bulletPos COORD <0, 0>
 enemyPos COORD <ScreenWidth / 2, 1>
-initialLifePos COORD <ScreenWidth - 10, 5>
-lifePos COORD <ScreenWidth - 10, 5>
+lifePos COORD <5, 5>
 
 ; Define others
 outputHandle DWORD 0
@@ -50,9 +45,9 @@ randomX DWORD ?
 ; Define scores and lives
 score DWORD 0
 life DWORD 3
-lifeSymbol BYTE 03h,0
-
-
+lifeSymbol1 BYTE 03h,0
+lifeSymbol2 BYTE 03h, 03h, 0
+lifeSymbol3 BYTE 03h, 03h, 03h, 0
 
 
 .code
@@ -72,19 +67,30 @@ main PROC
         call Clrscr
 
        ; Draw life
-       mov ax, initialLifePos.x
-       mov lifePos.x, ax
-       mov ax, initialLifePos.y
-       mov lifePos.y, ax
+       cmp life, 3
+       je drawlife3
+       cmp life, 2
+       je drawlife2
+       cmp life, 1
+       je drawlife1
 
-       mov ecx, life ; set loop counter
-       drawLifeLoop:              
-       INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR lifeSymbol, 1, lifePos, ADDR count
-       inc lifePos.x
-       loop drawLifeLoop
+       drawlife3:
+       INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR lifeSymbol3, 3, lifePos, ADDR count
+       jmp drawScore
 
+       drawlife2:
+       INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR lifeSymbol2, 2, lifePos, ADDR count
+       jmp drawScore
+
+       drawlife1:
+       INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR lifeSymbol1, 1, lifePos, ADDR count
+       jmp drawScore
+
+       drawScore:
+       ;;;TODO;;
        
        ; Draw airplane
+       drawAirplane:
        INVOKE WriteConsoleOutputCharacter,
                outputHandle, ADDR airplaneDraw5, LENGTHOF airplaneDraw5, airplanePos, ADDR count
         dec airplanePos.y
@@ -104,8 +110,7 @@ main PROC
                outputHandle, ADDR airplaneDraw1, LENGTHOF airplaneDraw1, airplanePos, ADDR count
         dec airplanePos.y
 
-
-        add airplanePos.y,5;
+        add airplanePos.y,5; Add back 5 to airplanePos.y
         
         ; Draw bullet if active
         cmp bulletPos.y, 0
@@ -120,25 +125,30 @@ main PROC
         INVOKE GetAsyncKeyState, VK_LEFT
         test ax, 8000h
         jz checkRight
-        dec airplanePos.x
+        cmp airplanePos.x, MarginSize ; If airplanePos.x is at the left edge of the screen, do not move right
+        jle checkRight
+        sub airplanePos.x, 2
         jmp checkShoot
 
         checkRight:
         INVOKE GetAsyncKeyState, VK_RIGHT
         test ax, 8000h
         jz checkShoot
-        inc airplanePos.x
+        cmp airplanePos.x, ScreenWidth - MarginSize ; If airplanePos.x is at the right edge of the screen, do not move right
+        jge checkShoot
+        add airplanePos.x,2
         jmp checkShoot
+
 
         checkShoot:
         INVOKE GetAsyncKeyState, VK_SPACE
         test ax, 8000h
         jz updateBullet
         mov bx, airplanePos.x
-        add bx,2 ; Adjust bullet position x
+        add bx,5 ; Adjust bullet position x
         mov bulletPos.x, bx
         mov bx, airplanePos.y
-        sub bx, 2 ; Adjust bullet position y
+        sub bx, 3 ; Adjust bullet position y
         mov bulletPos.y, bx
         dec bulletPos.y
 
@@ -162,6 +172,7 @@ main PROC
 
         ; If collision, reset enemy position with random x
         mov ax, ScreenWidth
+        sub ax, 10 ; RandomRange will generate a number between 0 and the value in ax(i.e. ScreenWidth - 10) and store back in ax
         INVOKE RandomRange
         mov enemyPos.x, ax
         mov enemyPos.y, 1
