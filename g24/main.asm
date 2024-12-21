@@ -44,15 +44,14 @@ enemyShape4draw4 BYTE '|  \_/  |', 0
 enemyShape4draw5 BYTE ' \_____/ ', 0
 
 
-enemyBullet1 BYTE 'o'
-enemyBullet2 BYTE 'o'
-enemyBullet3 BYTE 'o'
-enemyBullet4 BYTE 'o'
-
-boundary BYTE '||'
-boundaryPosLeft COORD <13, 0>
-boundaryPosRight COORD <0 , 0>
-
+enemy1 BYTE 'E'
+enemyBullet1 BYTE 'b'
+enemy2 BYTE 'E'
+enemyBullet2 BYTE 'b'
+enemy3 BYTE 'E'
+enemyBullet3 BYTE 'b'
+enemy4 BYTE 'E'
+enemyBullet4 BYTE 'b'
 ; Define enemy positions and bullets
 enemyPos1 COORD <26, 5>
 enemyBulletPos1 COORD <30, 5>
@@ -97,7 +96,10 @@ lifeSymbol2 BYTE 'H','P',':',03h, 03h, 0
 lifeSymbol3 BYTE 'H','P',':',03h, 03h, 03h, 0
 lifePos COORD <5, 3>
 
-main EQU start@0
+; Define words
+gameOverMsg BYTE "Game Over", 0
+
+main   EQU start@0
 
 .code
 SetConsoleOutputCP PROTO STDCALL :DWORD
@@ -297,7 +299,7 @@ main PROC
         INVOKE GetAsyncKeyState, VK_RIGHT
         test ax, 8000h
         jz checkShoot
-        cmp airplanePos.x, ScreenWidth - MarginSize - 10; If airplanePos.x is at the right edge of the screen, do not move right
+        cmp airplanePos.x, ScreenWidth - MarginSize -10; If airplanePos.x is at the right edge of the screen, do not move right
         jge checkShoot
         add airplanePos.x, 2
         jmp checkShoot
