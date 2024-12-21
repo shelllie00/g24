@@ -18,6 +18,32 @@ airplanePos COORD <ScreenWidth / 2, ScreenHeight - 2>
 bulletPos COORD <0, 0>
 
 ; Define enemies
+enemyShape1draw1 BYTE '   ______', 0
+enemyShape1draw2 BYTE '  | O  O |', 0
+enemyShape1draw3 BYTE '  |  <>  |', 0
+enemyShape1draw4 BYTE '  |  \/  |', 0
+enemyShape1draw5 BYTE '  |______|', 0
+
+enemyShape2draw1 BYTE '   _____', 0
+enemyShape2draw2 BYTE '  /     \ ', 0
+enemyShape2draw3 BYTE ' |       |', 0
+enemyShape2draw4 BYTE '  \_____/ ', 0
+enemyShape2draw5 BYTE '   (   )', 0
+
+enemyShape3draw1 BYTE '    ( )   ', 0
+enemyShape3draw2 BYTE '  /     \ ', 0
+enemyShape3draw3 BYTE ' |   *   | ', 0
+enemyShape3draw4 BYTE '  \     / ', 0
+enemyShape3draw5 BYTE '   \___/ ' , 0
+
+
+enemyShape4draw1 BYTE '  _______', 0
+enemyShape4draw2 BYTE ' |  O O  |', 0
+enemyShape4draw3 BYTE ' |   ^   |', 0
+enemyShape4draw4 BYTE ' |  \_/  |', 0
+enemyShape4draw5 BYTE '  \_____/ ', 0
+
+
 enemy1 BYTE 'E'
 enemyBullet1 BYTE 'b'
 enemy2 BYTE 'E'
@@ -27,13 +53,13 @@ enemyBullet3 BYTE 'b'
 enemy4 BYTE 'E'
 enemyBullet4 BYTE 'b'
 ; Define enemy positions and bullets
-enemyPos1 COORD <30, 5>
+enemyPos1 COORD <26, 5>
 enemyBulletPos1 COORD <30, 5>
-enemyPos2 COORD <50, 5>
+enemyPos2 COORD <45, 5>
 enemyBulletPos2 COORD <50, 5>
-enemyPos3 COORD <90, 5>
+enemyPos3 COORD <85, 5>
 enemyBulletPos3 COORD <90, 5>
-enemyPos4 COORD <110, 5>
+enemyPos4 COORD <105, 5>
 enemyBulletPos4 COORD <110, 5>
 enemyActive1 BYTE 1
 enemyActive2 BYTE 1
@@ -129,8 +155,19 @@ main PROC
     drawenemy1:
         cmp enemyActive1, 0 ; Check if enemy is active 
         je drawEnemy2
-        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemy1, 1, enemyPos1, ADDR count
-        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyBullet1, 1, enemyBulletPos1, ADDR count
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape1draw5, LENGTHOF enemyShape1draw5, enemyPos1, ADDR count
+		dec enemyPos1.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape1draw4, LENGTHOF enemyShape1draw4, enemyPos1, ADDR count
+		dec enemyPos1.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape1draw3, LENGTHOF enemyShape1draw3, enemyPos1, ADDR count
+		dec enemyPos1.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape1draw2, LENGTHOF enemyShape1draw3, enemyPos1, ADDR count
+		dec enemyPos1.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape1draw1, LENGTHOF enemyShape1draw1, enemyPos1, ADDR count
+		dec enemyPos1.y
+		add enemyPos1.y, 5 
+		
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyBullet1, 1, enemyBulletPos1, ADDR count
         cmp enemyBulletPos1.y, ScreenHeight-5 ; Check if enemy bullet is at the bottom of the screen
         jle bulletdrop1
         mov enemyBulletPos1.x, 30 ; Reset enemyBullet1 position
@@ -142,8 +179,19 @@ main PROC
     drawEnemy2:
         cmp enemyActive2, 0 ; Check if enemy is active
         je drawEnemy3
-        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemy2, 1, enemyPos2, ADDR count
-        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyBullet2, 1, enemyBulletPos2, ADDR count
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape2draw5, LENGTHOF enemyShape2draw5, enemyPos2, ADDR count
+		dec enemyPos2.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape2draw4, LENGTHOF enemyShape2draw4, enemyPos2, ADDR count
+		dec enemyPos2.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape2draw3, LENGTHOF enemyShape2draw3, enemyPos2, ADDR count
+		dec enemyPos2.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape2draw2, LENGTHOF enemyShape2draw3, enemyPos2, ADDR count
+		dec enemyPos2.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape2draw1, LENGTHOF enemyShape2draw1, enemyPos2, ADDR count
+		dec enemyPos2.y
+		add enemyPos2.y, 5 
+		
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyBullet2, 1, enemyBulletPos2, ADDR count
         cmp enemyBulletPos2.y, ScreenHeight-5 ; Check if enemy bullet is at the bottom of the screen
         jle bulletdrop2
         mov enemyBulletPos2.x, 50 ; Reset enemyBullet2 position
@@ -155,8 +203,19 @@ main PROC
     drawEnemy3:
         cmp enemyActive3, 0 ; Check if enemy is active
         je drawEnemy4
-        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemy3, 1, enemyPos3, ADDR count
-        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyBullet3, 1, enemyBulletPos3, ADDR count
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape3draw5, LENGTHOF enemyShape3draw5, enemyPos3, ADDR count
+		dec enemyPos3.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape3draw4, LENGTHOF enemyShape1draw3, enemyPos3, ADDR count
+		dec enemyPos3.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape3draw3, LENGTHOF enemyShape1draw3, enemyPos3, ADDR count
+		dec enemyPos3.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape3draw2, LENGTHOF enemyShape1draw3, enemyPos3, ADDR count
+		dec enemyPos3.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape3draw1, LENGTHOF enemyShape1draw3, enemyPos3, ADDR count
+		dec enemyPos3.y
+		add enemyPos3.y, 5
+		
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyBullet3, 1, enemyBulletPos3, ADDR count
         cmp enemyBulletPos3.y, ScreenHeight-5 ; Check if enemy bullet is at the bottom of the screen
         jle bulletdrop3
         mov enemyBulletPos3.x, 90 ; Reset enemyBullet3 position
@@ -168,8 +227,19 @@ main PROC
     drawEnemy4:
         cmp enemyActive4, 0 ; Check if enemy is active
         je endDrawEnemies
-        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemy4, 1, enemyPos4, ADDR count
-        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyBullet4, 1, enemyBulletPos4, ADDR count
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape4draw5, LENGTHOF enemyShape4draw5, enemyPos4, ADDR count
+		dec enemyPos4.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape4draw4, LENGTHOF enemyShape4draw4, enemyPos4, ADDR count
+		dec enemyPos4.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape4draw3, LENGTHOF enemyShape4draw3, enemyPos4, ADDR count
+		dec enemyPos4.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape4draw2, LENGTHOF enemyShape4draw3, enemyPos4, ADDR count
+		dec enemyPos4.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape4draw1, LENGTHOF enemyShape4draw1, enemyPos4, ADDR count
+		dec enemyPos4.y
+		add enemyPos4.y ,5
+		
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyBullet4, 1, enemyBulletPos4, ADDR count
         cmp enemyBulletPos4.y, ScreenHeight-5 ; Check if enemy bullet is at the bottom of the screen
         jle bulletdrop4
         mov enemyBulletPos4.x, 110 ; Reset enemyBullet4 position
