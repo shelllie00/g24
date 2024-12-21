@@ -10,30 +10,53 @@ ScreenHeight = 30
 airplaneDraw1 BYTE ' ', ' ', ' ', ' ', ' ', '/', 5ch, 0
 airplaneDraw2 BYTE ' ', ' ', '_', '_', '/', ' ', ' ', 5ch, '_', '_', 0
 airplaneDraw3 BYTE '/', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', 5ch, 0
-airplaneDraw4 BYTE  ' ',' ',' ', ' ', 7ch, ' ', ' ', 7ch, 0
-airplaneDraw5 BYTE  ' ',' ', ' ', '/', '_', 7ch, 7ch, '_', 5ch, 0
+airplaneDraw4 BYTE  ' ',' ',' ', ' ', '|', ' ', ' ', '|', 0
+airplaneDraw5 BYTE  ' ',' ', ' ', '/', '_', '|', '|', '_', 5ch, 0
 bullet BYTE '*'
 initialAirplanePos COORD <ScreenWidth / 2, ScreenHeight - 2>
 airplanePos COORD <ScreenWidth / 2, ScreenHeight - 2>
 bulletPos COORD <0, 0>
 
 ; Define enemies
-enemy1 BYTE 'E'
+enemyShape1draw1 BYTE ' ______', 0
+enemyShape1draw2 BYTE '| O  O |', 0
+enemyShape1draw3 BYTE '|  <>  |', 0
+enemyShape1draw4 BYTE '|  \/  |', 0
+enemyShape1draw5 BYTE '|______|', 0
+
+enemyShape2draw1 BYTE '  _____', 0
+enemyShape2draw2 BYTE ' /     \ ', 0
+enemyShape2draw3 BYTE '|       |', 0
+enemyShape2draw4 BYTE ' \_____/ ', 0
+enemyShape2draw5 BYTE '  (   )', 0
+
+enemyShape3draw1 BYTE '   ( )   ', 0
+enemyShape3draw2 BYTE ' /     \ ', 0
+enemyShape3draw3 BYTE '|   *   | ', 0
+enemyShape3draw4 BYTE ' \     / ', 0
+enemyShape3draw5 BYTE '  \___/ ' , 0
+
+
+enemyShape4draw1 BYTE ' _______', 0
+enemyShape4draw2 BYTE '|  O O  |', 0
+enemyShape4draw3 BYTE '|   ^   |', 0
+enemyShape4draw4 BYTE '|  \_/  |', 0
+enemyShape4draw5 BYTE ' \_____/ ', 0
+
+
 enemyBullet1 BYTE 'o'
-enemy2 BYTE 'E'
 enemyBullet2 BYTE 'o'
-enemy3 BYTE 'E'
 enemyBullet3 BYTE 'o'
-enemy4 BYTE 'E'
 enemyBullet4 BYTE 'o'
+
 ; Define enemy positions and bullets
-enemyPos1 COORD <30, 5>
+enemyPos1 COORD <26, 5>
 enemyBulletPos1 COORD <30, 5>
-enemyPos2 COORD <50, 5>
+enemyPos2 COORD <46, 5>
 enemyBulletPos2 COORD <50, 5>
-enemyPos3 COORD <90, 5>
+enemyPos3 COORD <86, 5>
 enemyBulletPos3 COORD <90, 5>
-enemyPos4 COORD <110, 5>
+enemyPos4 COORD <106, 5>
 enemyBulletPos4 COORD <110, 5>
 enemyActive1 BYTE 1
 enemyActive2 BYTE 1
@@ -57,26 +80,18 @@ loseDraw4 BYTE '|',' ',7ch,'_','_',7ch,' ',7ch,'_',7ch,' ',7ch,'_','_','_',')','
 loseDraw5 BYTE '|','_','_','_','_','_',5ch,'_','_','_','/',7ch,'_','_','_','_','/',7ch,'_','_','_','_','_',7ch,' ','(','_',')',0
 
 
-
-
 ; Define others
 outputHandle DWORD 0
-screenBuffer COORD <130,30>
 bytesWritten DWORD 0
+screenBuffer COORD <130,30>
 count DWORD 0
-key DWORD ?
-randomX DWORD ?
 
-; Define scores and lives
-score DWORD 0
+; Define lives
 life DWORD 3
 lifeSymbol1 BYTE 'H','P',':',03h,0
 lifeSymbol2 BYTE 'H','P',':',03h, 03h, 0
 lifeSymbol3 BYTE 'H','P',':',03h, 03h, 03h, 0
 lifePos COORD <5, 3>
-
-; Define words
-gameOverMsg BYTE "Game Over", 0
 
 .code
 SetConsoleOutputCP PROTO STDCALL :DWORD
@@ -87,8 +102,8 @@ main PROC
     INVOKE SetConsoleOutputCP, 65001 ; Set console output to UTF-8
     INVOKE GetStdHandle, STD_OUTPUT_HANDLE
     mov outputHandle, eax
-    INVOKE SetConsoleScreenBufferSize, outputHandle, screenBuffer
     call Clrscr
+
 
     ; Main game loop
     gameLoop:
@@ -139,12 +154,23 @@ main PROC
         INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR bullet, 1, bulletPos, ADDR count
     skipBullet:
 
-    ; Draw enemies and their bullets
+        ; Draw enemies and their bullets
     drawenemy1:
         cmp enemyActive1, 0 ; Check if enemy is active 
         je drawEnemy2
-        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemy1, 1, enemyPos1, ADDR count
-        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyBullet1, 1, enemyBulletPos1, ADDR count
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape1draw5, LENGTHOF enemyShape1draw5, enemyPos1, ADDR count
+		dec enemyPos1.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape1draw4, LENGTHOF enemyShape1draw4, enemyPos1, ADDR count
+		dec enemyPos1.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape1draw3, LENGTHOF enemyShape1draw3, enemyPos1, ADDR count
+		dec enemyPos1.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape1draw2, LENGTHOF enemyShape1draw3, enemyPos1, ADDR count
+		dec enemyPos1.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape1draw1, LENGTHOF enemyShape1draw1, enemyPos1, ADDR count
+		dec enemyPos1.y
+		add enemyPos1.y, 5 
+		
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyBullet1, 1, enemyBulletPos1, ADDR count
         cmp enemyBulletPos1.y, ScreenHeight-5 ; Check if enemy bullet is at the bottom of the screen
         jle bulletdrop1
         mov enemyBulletPos1.x, 30 ; Reset enemyBullet1 position
@@ -156,8 +182,19 @@ main PROC
     drawEnemy2:
         cmp enemyActive2, 0 ; Check if enemy is active
         je drawEnemy3
-        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemy2, 1, enemyPos2, ADDR count
-        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyBullet2, 1, enemyBulletPos2, ADDR count
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape2draw5, LENGTHOF enemyShape2draw5, enemyPos2, ADDR count
+		dec enemyPos2.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape2draw4, LENGTHOF enemyShape2draw4, enemyPos2, ADDR count
+		dec enemyPos2.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape2draw3, LENGTHOF enemyShape2draw3, enemyPos2, ADDR count
+		dec enemyPos2.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape2draw2, LENGTHOF enemyShape2draw3, enemyPos2, ADDR count
+		dec enemyPos2.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape2draw1, LENGTHOF enemyShape2draw1, enemyPos2, ADDR count
+		dec enemyPos2.y
+		add enemyPos2.y, 5 
+		
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyBullet2, 1, enemyBulletPos2, ADDR count
         cmp enemyBulletPos2.y, ScreenHeight-5 ; Check if enemy bullet is at the bottom of the screen
         jle bulletdrop2
         mov enemyBulletPos2.x, 50 ; Reset enemyBullet2 position
@@ -169,8 +206,19 @@ main PROC
     drawEnemy3:
         cmp enemyActive3, 0 ; Check if enemy is active
         je drawEnemy4
-        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemy3, 1, enemyPos3, ADDR count
-        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyBullet3, 1, enemyBulletPos3, ADDR count
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape3draw5, LENGTHOF enemyShape3draw5, enemyPos3, ADDR count
+		dec enemyPos3.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape3draw4, LENGTHOF enemyShape1draw3, enemyPos3, ADDR count
+		dec enemyPos3.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape3draw3, LENGTHOF enemyShape1draw3, enemyPos3, ADDR count
+		dec enemyPos3.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape3draw2, LENGTHOF enemyShape1draw3, enemyPos3, ADDR count
+		dec enemyPos3.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape3draw1, LENGTHOF enemyShape1draw3, enemyPos3, ADDR count
+		dec enemyPos3.y
+		add enemyPos3.y, 5
+		
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyBullet3, 1, enemyBulletPos3, ADDR count
         cmp enemyBulletPos3.y, ScreenHeight-5 ; Check if enemy bullet is at the bottom of the screen
         jle bulletdrop3
         mov enemyBulletPos3.x, 90 ; Reset enemyBullet3 position
@@ -182,8 +230,19 @@ main PROC
     drawEnemy4:
         cmp enemyActive4, 0 ; Check if enemy is active
         je endDrawEnemies
-        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemy4, 1, enemyPos4, ADDR count
-        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyBullet4, 1, enemyBulletPos4, ADDR count
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape4draw5, LENGTHOF enemyShape4draw5, enemyPos4, ADDR count
+		dec enemyPos4.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape4draw4, LENGTHOF enemyShape4draw4, enemyPos4, ADDR count
+		dec enemyPos4.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape4draw3, LENGTHOF enemyShape4draw3, enemyPos4, ADDR count
+		dec enemyPos4.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape4draw2, LENGTHOF enemyShape4draw3, enemyPos4, ADDR count
+		dec enemyPos4.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape4draw1, LENGTHOF enemyShape4draw1, enemyPos4, ADDR count
+		dec enemyPos4.y
+		add enemyPos4.y ,5
+		
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyBullet4, 1, enemyBulletPos4, ADDR count
         cmp enemyBulletPos4.y, ScreenHeight-5 ; Check if enemy bullet is at the bottom of the screen
         jle bulletdrop4
         mov enemyBulletPos4.x, 110 ; Reset enemyBullet4 position
@@ -207,12 +266,12 @@ main PROC
         INVOKE GetAsyncKeyState, VK_RIGHT
         test ax, 8000h
         jz checkShoot
-        cmp airplanePos.x, ScreenWidth - MarginSize ; If airplanePos.x is at the right edge of the screen, do not move right
+        cmp airplanePos.x, ScreenWidth - MarginSize; If airplanePos.x is at the right edge of the screen, do not move right
         jge checkShoot
         add airplanePos.x, 2
         jmp checkShoot
-
-    checkShoot:
+		
+	checkShoot:
         INVOKE GetAsyncKeyState, VK_SPACE
         test ax, 8000h
         jz updateBullet
@@ -233,8 +292,9 @@ main PROC
 
         ; Delay for a short period
         INVOKE Sleep, 50
-
-    ; Check if airplane is shot
+   
+    
+	; Check if airplane is shot
     checkEnemyCollision1:    
         cmp enemyActive1, 0 ; If equal, enemy1 already died
         je checkEnemyCollision2
@@ -310,49 +370,72 @@ main PROC
     checkBulletCollision1:
         cmp bulletPos.y, 5 ; If bullet is at the top of the screen, skip
         jne checkBulletCollision2
-        mov ax, enemyPos1.x
-        cmp bulletPos.x, ax ; Check1: bullet.x and enemy.x
-        jne checkBulletCollision2 ; skip
-        mov enemyActive1, 0 ; If no skip, then collision happen, enemy1 died
-        mov bulletPos.y, 0 ; Reset bullet position
-        jmp checkBulletCollision2
+        mov ecx,7
+		mov ax, enemyPos1.x
+		L1:
+			cmp bulletPos.x, ax ; Check1: bullet.x and enemy.x
+			je bulletHitEnemy1 ; skip
+			inc ax
+			loop L1
+			jmp checkBulletCollision2
+		bulletHitEnemy1:
+			mov enemyActive1, 0 ; If no skip, then collision happen, enemy2 died
+			mov bulletPos.y, 0 ; Reset bullet position
+			jmp checkBulletCollision2
 
     ; Check if enemy2 is shot
     checkBulletCollision2:
         cmp bulletPos.y, 5 ; If bullet is at the top of the screen, skip
         jne checkBulletCollision3
-        mov ax, enemyPos2.x
-        cmp bulletPos.x, ax ; Check1: bullet.x and enemy.x
-        jne checkBulletCollision3 ; skip
-        mov enemyActive2, 0 ; If no skip, then collision happen, enemy2 died
-        mov bulletPos.y, 0 ; Reset bullet position
-        jmp checkBulletCollision3
-        
+		mov ecx,7
+		mov ax, enemyPos2.x
+		L2:
+			cmp bulletPos.x, ax ; Check1: bullet.x and enemy.x
+			je bulletHitEnemy2 ; skip
+			inc ax
+			loop L2
+			jmp checkBulletCollision3
+		bulletHitEnemy2:
+			mov enemyActive2, 0 ; If no skip, then collision happen, enemy2 died
+			mov bulletPos.y, 0 ; Reset bullet position
+			jmp checkBulletCollision3
+
     ; Check if enemy3 is shot
     checkBulletCollision3:
         cmp bulletPos.y, 5 ; If bullet is at the top of the screen, skip
         jne checkBulletCollision4
-        mov ax, enemyPos3.x
-        cmp bulletPos.x, ax ; Check1: bullet.x and enemy.x
-        jne checkBulletCollision4 ; skip
-        mov enemyActive3, 0 ; If no skip, then collision happen, enemy3 died
-        mov bulletPos.y, 0 ; Reset bullet position
-        jmp checkBulletCollision4
+        mov ecx,7
+		mov ax, enemyPos3.x
+		L3:
+			cmp bulletPos.x, ax ; Check1: bullet.x and enemy.x
+			je bulletHitEnemy3 ; skip
+			inc ax
+			loop L3
+			jmp checkBulletCollision4
+		bulletHitEnemy3:
+			mov enemyActive3, 0 ; If no skip, then collision happen, enemy2 died
+			mov bulletPos.y, 0 ; Reset bullet position
+			jmp checkBulletCollision4
      
     ; Check if enemy4 is shot
     checkBulletCollision4:
         cmp bulletPos.y, 5 ; If bullet is at the top of the screen, skip
         jne endBulletCollision
-        mov ax, enemyPos4.x
-        cmp bulletPos.x, ax ; Check1: bullet.x and enemy.x
-        jne endBulletCollision ; skip
-        mov enemyActive4, 0 ; If no skip, then collision happen, enemy4 died
-        mov bulletPos.y, 0 ; Reset bullet position
-        jmp endBulletCollision
+        mov ecx,7
+		mov ax, enemyPos4.x
+		L4:
+			cmp bulletPos.x, ax ; Check1: bullet.x and enemy.x
+			je bulletHitEnemy4 ; skip
+			inc ax
+			loop L4
+			jmp endBulletCollision
+		bulletHitEnemy4:
+			mov enemyActive4, 0 ; If no skip, then collision happen, enemy2 died
+			mov bulletPos.y, 0 ; Reset bullet position
+			jmp endBulletCollision
     endBulletCollision:
 
-
-    ; If lose
+     ; If lose
     lose:
         cmp life, 0
         jne checkWin
@@ -396,5 +479,6 @@ main PROC
    
     exitGame:
         exit
+
 main ENDP
 END main
