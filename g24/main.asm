@@ -6,34 +6,39 @@ MarginSize = 15 ; Margin size
 ScreenWidth = 130
 ScreenHeight = 30
 
-
 ; Define airplane
 airplaneDraw1 BYTE ' ', ' ', ' ', ' ', ' ', '/', 5ch, 0
 airplaneDraw2 BYTE ' ', ' ', '_', '_', '/', ' ', ' ', 5ch, '_', '_', 0
 airplaneDraw3 BYTE '/', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', 5ch, 0
 airplaneDraw4 BYTE  ' ',' ',' ', ' ', '|', ' ', ' ', '|', 0
 airplaneDraw5 BYTE  ' ',' ', ' ', '/', '_', '|', '|', '_', 5ch, 0
-
-
-;Blueprint to draw a bigger plane (not yet used, maybe used in next chapter?)
-;airplaneBiggerDraw1 BYTE ' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','/',5ch,0
-;airplaneBiggerDraw2 BYTE ' ','_','_','_','_','_','_','_','_','_','_','/',' ',' ',5ch,'_','_','_','_','_','_','_','_','_','_',0
-;airplaneBiggerDraw3 BYTE '/','_','_','_','_','_','_','_','_','_','_','_','_','_','_','_','_','_','_','_','_','_','_','_','_',5ch,0
-;airplaneBiggerDraw4 BYTE ' ',' ',' ','_','_','|','_','_','|','_','/','.','-','-','.',5ch,'_','|','_','_','|','_','_',' ',' ',' ',' ',' ',' ',' ',0
-;airplaneBiggerDraw5 BYTE ' ',' ','/','_','_','|','_','|','_','_','(',' ', '>', '<', ' ',')','_','_','|','_','|','_','_',5ch,' ',' ',' ',' ',' ',' ',0
-;airplaneBiggerDraw6 BYTE ' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','_','/','-','-',5ch,'_',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',0
-;airplaneBiggerDraw7 BYTE ' ',' ',' ',' ',' ',' ',' ',' ',' ','(','/','-','-','-','-',5ch,')',' ',' ',' ',' ',' ',' ',' ',' ',0
-
-bullet BYTE '**'
-enemy BYTE 'O'
-
-
-; Define positions
+bullet BYTE '*'
 initialAirplanePos COORD <ScreenWidth / 2, ScreenHeight - 2>
 airplanePos COORD <ScreenWidth / 2, ScreenHeight - 2>
 bulletPos COORD <0, 0>
-enemyPos COORD <ScreenWidth / 2, 1>
-lifePos COORD <5, 5>
+
+; Define enemies
+enemy1 BYTE 'E'
+enemyBullet1 BYTE 'b'
+enemy2 BYTE 'E'
+enemyBullet2 BYTE 'b'
+enemy3 BYTE 'E'
+enemyBullet3 BYTE 'b'
+enemy4 BYTE 'E'
+enemyBullet4 BYTE 'b'
+; Define enemy positions and bullets
+enemyPos1 COORD <30, 5>
+enemyBulletPos1 COORD <30, 5>
+enemyPos2 COORD <50, 5>
+enemyBulletPos2 COORD <50, 5>
+enemyPos3 COORD <90, 5>
+enemyBulletPos3 COORD <90, 5>
+enemyPos4 COORD <110, 5>
+enemyBulletPos4 COORD <110, 5>
+enemyActive1 BYTE 1
+enemyActive2 BYTE 1
+enemyActive3 BYTE 1
+enemyActive4 BYTE 1
 
 ; Define others
 outputHandle DWORD 0
@@ -48,7 +53,10 @@ life DWORD 3
 lifeSymbol1 BYTE 03h,0
 lifeSymbol2 BYTE 03h, 03h, 0
 lifeSymbol3 BYTE 03h, 03h, 03h, 0
+lifePos COORD <5, 3>
 
+; Define words
+gameOverMsg BYTE "Game Over", 0
 
 .code
 SetConsoleOutputCP PROTO STDCALL :DWORD
@@ -61,65 +69,110 @@ main PROC
     mov outputHandle, eax
     call Clrscr
 
+
     ; Main game loop
     gameLoop:
         ; Clear screen
         call Clrscr
 
-       ; Draw life
-       cmp life, 3
-       je drawlife3
-       cmp life, 2
-       je drawlife2
-       cmp life, 1
-       je drawlife1
+        ; Draw life
+        cmp life, 3
+        je drawlife3
+        cmp life, 2
+        je drawlife2
+        cmp life, 1
+        je drawlife1
 
-       drawlife3:
-       INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR lifeSymbol3, 3, lifePos, ADDR count
-       jmp drawScore
+    ; Draw life
+    drawlife3:
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR lifeSymbol3, 3, lifePos, ADDR count
+        jmp drawAirplane
+    drawlife2:
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR lifeSymbol2, 2, lifePos, ADDR count
+        jmp drawAirplane
+    drawlife1:
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR lifeSymbol1, 1, lifePos, ADDR count
+        jmp drawAirplane
 
-       drawlife2:
-       INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR lifeSymbol2, 2, lifePos, ADDR count
-       jmp drawScore
-
-       drawlife1:
-       INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR lifeSymbol1, 1, lifePos, ADDR count
-       jmp drawScore
-
-       drawScore:
-       ;;;TODO;;
-       
-       ; Draw airplane
-       drawAirplane:
-       INVOKE WriteConsoleOutputCharacter,
+    ; Draw airplane
+    drawAirplane:
+        INVOKE WriteConsoleOutputCharacter,
                outputHandle, ADDR airplaneDraw5, LENGTHOF airplaneDraw5, airplanePos, ADDR count
         dec airplanePos.y
         INVOKE WriteConsoleOutputCharacter,
                outputHandle, ADDR airplaneDraw4, LENGTHOF airplaneDraw4, airplanePos, ADDR count
         dec airplanePos.y
-
         INVOKE WriteConsoleOutputCharacter,
                outputHandle, ADDR airplaneDraw3, LENGTHOF airplaneDraw3, airplanePos, ADDR count
         dec airplanePos.y
-
         INVOKE WriteConsoleOutputCharacter,
                outputHandle, ADDR airplaneDraw2, LENGTHOF airplaneDraw2, airplanePos, ADDR count
         dec airplanePos.y
-
         INVOKE WriteConsoleOutputCharacter,
                outputHandle, ADDR airplaneDraw1, LENGTHOF airplaneDraw1, airplanePos, ADDR count
         dec airplanePos.y
+        add airplanePos.y, 5 ; Add back 5 to airplanePos.y
 
-        add airplanePos.y,5; Add back 5 to airplanePos.y
-        
-        ; Draw bullet if active
+        ; Draw my bullet if active
         cmp bulletPos.y, 0
         je skipBullet
         INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR bullet, 1, bulletPos, ADDR count
-        skipBullet:
+    skipBullet:
 
-        ; Draw enemy
-        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemy, 1, enemyPos, ADDR count
+        ; Draw enemies and their bullets
+    drawenemy1:
+        cmp enemyActive1, 0 ; Check if enemy is active 
+        je drawEnemy2
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemy1, 1, enemyPos1, ADDR count
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyBullet1, 1, enemyBulletPos1, ADDR count
+        cmp enemyBulletPos1.y, ScreenHeight-5 ; Check if enemy bullet is at the bottom of the screen
+        jle bulletdrop1
+        mov enemyBulletPos1.x, 30 ; Reset enemyBullet1 position
+        mov enemyBulletPos1.y, 5
+        jmp drawEnemy2
+        bulletdrop1:
+        inc enemyBulletPos1.y ; Bullet drop
+
+    drawEnemy2:
+        cmp enemyActive2, 0 ; Check if enemy is active
+        je drawEnemy3
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemy2, 1, enemyPos2, ADDR count
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyBullet2, 1, enemyBulletPos2, ADDR count
+        cmp enemyBulletPos2.y, ScreenHeight-5 ; Check if enemy bullet is at the bottom of the screen
+        jle bulletdrop2
+        mov enemyBulletPos2.x, 50 ; Reset enemyBullet2 position
+        mov enemyBulletPos2.y, 5
+        jmp drawEnemy3
+        bulletdrop2:
+        inc enemyBulletPos2.y ; Bullet drop
+     
+    drawEnemy3:
+        cmp enemyActive3, 0 ; Check if enemy is active
+        je drawEnemy4
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemy3, 1, enemyPos3, ADDR count
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyBullet3, 1, enemyBulletPos3, ADDR count
+        cmp enemyBulletPos3.y, ScreenHeight-5 ; Check if enemy bullet is at the bottom of the screen
+        jle bulletdrop3
+        mov enemyBulletPos3.x, 90 ; Reset enemyBullet3 position
+        mov enemyBulletPos3.y, 5
+        jmp drawEnemy4
+        bulletdrop3:
+        inc enemyBulletPos3.y ; Bullet drop
+
+    drawEnemy4:
+        cmp enemyActive4, 0 ; Check if enemy is active
+        je endDrawEnemies
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemy4, 1, enemyPos4, ADDR count
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyBullet4, 1, enemyBulletPos4, ADDR count
+        cmp enemyBulletPos4.y, ScreenHeight-5 ; Check if enemy bullet is at the bottom of the screen
+        jle bulletdrop4
+        mov enemyBulletPos4.x, 110 ; Reset enemyBullet4 position
+        mov enemyBulletPos4.y, 5
+        jmp endDrawEnemies
+        bulletdrop4:
+        inc enemyBulletPos4.y ; Bullet drop
+
+    endDrawEnemies:
 
         ; Handle input
         INVOKE GetAsyncKeyState, VK_LEFT
@@ -130,55 +183,116 @@ main PROC
         sub airplanePos.x, 2
         jmp checkShoot
 
-        checkRight:
+    checkRight:
         INVOKE GetAsyncKeyState, VK_RIGHT
         test ax, 8000h
         jz checkShoot
         cmp airplanePos.x, ScreenWidth - MarginSize ; If airplanePos.x is at the right edge of the screen, do not move right
         jge checkShoot
-        add airplanePos.x,2
+        add airplanePos.x, 2
         jmp checkShoot
 
-
-        checkShoot:
+    checkShoot:
         INVOKE GetAsyncKeyState, VK_SPACE
         test ax, 8000h
         jz updateBullet
         mov bx, airplanePos.x
-        add bx,5 ; Adjust bullet position x
+        add bx, 5 ; Adjust bullet position x
         mov bulletPos.x, bx
         mov bx, airplanePos.y
         sub bx, 3 ; Adjust bullet position y
         mov bulletPos.y, bx
         dec bulletPos.y
 
-        updateBullet:
+    updateBullet:
         ; Update bullet position
         cmp bulletPos.y, 0
         je endUpdate
         dec bulletPos.y
+    endUpdate:
 
-        endUpdate:
         ; Delay for a short period
         INVOKE Sleep, 50
 
-        ; Check for collision with enemy
-        mov bx, bulletPos.x
-        cmp bx, enemyPos.x
+    ; Check for collision with enemy
+    checkEnemyCollision1:    
+        cmp enemyActive1, 0 ; If equal, enemy1 already died
+        je checkEnemyCollision2
+       cmp enemyBulletPos1.y, ScreenHeight - 6 ; Check1: enemyBullet.y and plane.y
+        jl checkEnemyCollision2 ; Bullet still up in sky, skip
+        mov ax, enemyBulletPos1.x
+        cmp ax, airplanePos.x - 2 ; Check2: enemyBullet.x is between the range of plane.x
+        jg checkEnemyCollision2 ; skip
+        dec life    ; If no skip, then collision happen
+
+        checkEnemyCollision2:
+
+        
+    
+    
+    ;cmp byte ptr [edi], 0
+    ;    je skipEnemyCollision
+    ;    mov ax, (COORD PTR [esi]).x
+    ;    cmp ax, bulletPos.x
+    ;    jne skipEnemyCollision
+    ;    mov ax, (COORD PTR [esi]).y
+    ;    cmp ax, bulletPos.y
+    ;    jne skipEnemyCollision
+    ;    ; If collision, reset enemy position with random x and deactivate bullet
+    ;    mov byte ptr [edi], 0
+    ;    mov ax, ScreenWidth
+    ;    sub ax, 10
+    ;    INVOKE RandomRange
+    ;    mov (COORD PTR [esi]).x, ax
+    ;    mov (COORD PTR [esi]).y, 1
+    ;    mov byte ptr [edi], 1
+    ;    mov bulletPos.y, 0
+    ;skipEnemyCollision:
+    ;    cmp esi, OFFSET enemyPosArray + (NUM_ENEMIES - 1) * TYPE COORD  ; Check if it is the last enemy
+    ;    je endEnemyCollision
+    ;    add esi, TYPE COORD
+    ;    inc edi
+    ;    loop checkEnemyCollision
+    ;endEnemyCollision:
+    ;;;
+
+
+    ;;
+        ; Check for collision with airplane
+       ; mov ecx, NUM_ENEMIES
+        ;mov esi, OFFSET enemyBulletPosArray
+        ;mov edi, OFFSET enemyBulletActiveArray
+    ;checkAirplaneCollision:
+     ;   cmp byte ptr [edi], 0
+      ;  je skipAirplaneCollision
+       ; mov ax, (COORD PTR [esi]).x
+        ;cmp ax, airplanePos.x
+      ;  jne skipAirplaneCollision
+      ;  mov ax, (COORD PTR [esi]).y
+      ;  cmp ax, airplanePos.y
+      ;  jne skipAirplaneCollision
+        ; If collision, decrease life and deactivate bullet
+      ;  dec life
+       ; mov byte ptr [edi], 0
+    ;skipAirplaneCollision:
+        ;cmp esi, OFFSET enemyBulletPosArray + (NUM_ENEMIES - 1) * TYPE COORD ; Check if it is the last enemy bullet
+        ;je endairplaneCollision
+        ;add esi, TYPE COORD
+        ;inc edi
+        ;loop checkAirplaneCollision
+    ;endairplaneCollision:
+    ;;;
+
+        ; If life is 0, end the game
+        cmp life, 0
         jne gameLoop
-        mov bx, bulletPos.y
-        cmp bx, enemyPos.y
-        jne gameLoop
 
-        ; If collision, reset enemy position with random x
-        mov ax, ScreenWidth
-        sub ax, 10 ; RandomRange will generate a number between 0 and the value in ax(i.e. ScreenWidth - 10) and store back in ax
-        INVOKE RandomRange
-        mov enemyPos.x, ax
-        mov enemyPos.y, 1
-
-        jmp gameLoop
-
-    exit
+    endGame:
+        ; Display game over message
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR GameOverMsg, 5, lifePos, ADDR count
+        INVOKE Sleep, 50
+        
+        
+        exit
 main ENDP
 END main
