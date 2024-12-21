@@ -18,30 +18,30 @@ airplanePos COORD <ScreenWidth / 2, ScreenHeight - 2>
 bulletPos COORD <0, 0>
 
 ; Define enemies
-enemyShape1draw1 BYTE '   ______', 0
-enemyShape1draw2 BYTE '  | O  O |', 0
-enemyShape1draw3 BYTE '  |  <>  |', 0
-enemyShape1draw4 BYTE '  |  \/  |', 0
-enemyShape1draw5 BYTE '  |______|', 0
+enemyShape1draw1 BYTE ' ______', 0
+enemyShape1draw2 BYTE '| O  O |', 0
+enemyShape1draw3 BYTE '|  <>  |', 0
+enemyShape1draw4 BYTE '|  \/  |', 0
+enemyShape1draw5 BYTE '|______|', 0
 
-enemyShape2draw1 BYTE '   _____', 0
-enemyShape2draw2 BYTE '  /     \ ', 0
-enemyShape2draw3 BYTE ' |       |', 0
-enemyShape2draw4 BYTE '  \_____/ ', 0
-enemyShape2draw5 BYTE '   (   )', 0
+enemyShape2draw1 BYTE '  _____', 0
+enemyShape2draw2 BYTE ' /     \ ', 0
+enemyShape2draw3 BYTE '|       |', 0
+enemyShape2draw4 BYTE ' \_____/ ', 0
+enemyShape2draw5 BYTE '  (   )', 0
 
-enemyShape3draw1 BYTE '    ( )   ', 0
-enemyShape3draw2 BYTE '  /     \ ', 0
-enemyShape3draw3 BYTE ' |   *   | ', 0
-enemyShape3draw4 BYTE '  \     / ', 0
-enemyShape3draw5 BYTE '   \___/ ' , 0
+enemyShape3draw1 BYTE '   ( )   ', 0
+enemyShape3draw2 BYTE ' /     \ ', 0
+enemyShape3draw3 BYTE '|   *   | ', 0
+enemyShape3draw4 BYTE ' \     / ', 0
+enemyShape3draw5 BYTE '  \___/ ' , 0
 
 
-enemyShape4draw1 BYTE '  _______', 0
-enemyShape4draw2 BYTE ' |  O O  |', 0
-enemyShape4draw3 BYTE ' |   ^   |', 0
-enemyShape4draw4 BYTE ' |  \_/  |', 0
-enemyShape4draw5 BYTE '  \_____/ ', 0
+enemyShape4draw1 BYTE ' _______', 0
+enemyShape4draw2 BYTE '|  O O  |', 0
+enemyShape4draw3 BYTE '|   ^   |', 0
+enemyShape4draw4 BYTE '|  \_/  |', 0
+enemyShape4draw5 BYTE ' \_____/ ', 0
 
 
 enemy1 BYTE 'E'
@@ -55,11 +55,11 @@ enemyBullet4 BYTE 'b'
 ; Define enemy positions and bullets
 enemyPos1 COORD <26, 5>
 enemyBulletPos1 COORD <30, 5>
-enemyPos2 COORD <45, 5>
+enemyPos2 COORD <46, 5>
 enemyBulletPos2 COORD <50, 5>
-enemyPos3 COORD <85, 5>
+enemyPos3 COORD <86, 5>
 enemyBulletPos3 COORD <90, 5>
-enemyPos4 COORD <105, 5>
+enemyPos4 COORD <106, 5>
 enemyBulletPos4 COORD <110, 5>
 enemyActive1 BYTE 1
 enemyActive2 BYTE 1
@@ -146,10 +146,10 @@ main PROC
         add airplanePos.y, 5 ; Add back 5 to airplanePos.y
 
         ; Draw my bullet if active
-        ;cmp bulletPos.y, 0
-        ;je skipBullet
-        ;INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR bullet, 1, bulletPos, ADDR count
-    ;skipBullet:
+        cmp bulletPos.y, 0
+        je skipBullet
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR bullet, 1, bulletPos, ADDR count
+    skipBullet:
 
         ; Draw enemies and their bullets
     drawenemy1:
@@ -263,89 +263,112 @@ main PROC
         INVOKE GetAsyncKeyState, VK_RIGHT
         test ax, 8000h
         jz checkShoot
-        cmp airplanePos.x, ScreenWidth - MarginSize ; If airplanePos.x is at the right edge of the screen, do not move right
+        cmp airplanePos.x, ScreenWidth - MarginSize -10; If airplanePos.x is at the right edge of the screen, do not move right
         jge checkShoot
         add airplanePos.x, 2
         jmp checkShoot
+		
+	checkShoot:
+        INVOKE GetAsyncKeyState, VK_SPACE
+        test ax, 8000h
+        jz updateBullet
+        mov bx, airplanePos.x
+        add bx, 5 ; Adjust bullet position x
+        mov bulletPos.x, bx
+        mov bx, airplanePos.y
+        sub bx, 3 ; Adjust bullet position y
+        mov bulletPos.y, bx
+        dec bulletPos.y
 
-    checkShoot:
-		; Check if the Space key is pressed
-		INVOKE GetAsyncKeyState, VK_SPACE
-		test ax, 8000h
-		jz releaseSpace
-		; If the Space key is pressed, set spacePressed = 1
-		mov spacePressed, 1
-		jmp generateBullet
+    updateBullet:
+        ; Update bullet position
+        cmp bulletPos.y, 0
+        je endUpdate
+        dec bulletPos.y
+    endUpdate:
 
-	releaseSpace:
-		; If the Space key is not pressed, reset spacePressed to 0
-		mov spacePressed, 0
-		jmp updateBullets
-
-	generateBullet:
-		; If the Space key is pressed and cooldown is complete, generate a new bullet
-		cmp spacePressed, 1
-		jne updateBullets         ; Skip bullet generation if the Space key is not pressed
-
-		cmp bulletCooldown, 0     ; Check cooldown timer
-		jne skipGenerateBullet    ; Skip if cooldown is not complete
-
-		; Check if the maximum number of bullets is reached
-		cmp bulletCount, 10
-		jge skipGenerateBullet
-
-		; Set the initial position of the new bullet
-		mov bx, airplanePos.x
-		add bx, 5                 ; Bullet X position is slightly right of the airplane's center
-		mov ax, bulletCount   ; 將 bulletCount 放入 ax
-		mov cx, 8             ; COORD 結構的大小（8 bytes）
-		mul cx                ; ax = bulletCount * 8
-		mov bx, ax            ; bx 現在是 offset
-		mov bullets[bx], ebx   ; 設定子彈的 X 座標
-
-		mov ax, airplanePos.y
-		sub ax, 3                 ; Bullet Y position is above the airplane
-		mov bullets[bx + 4], eax
-
-		; Increase the bullet count
-		inc bulletCount
-
-		; Reset cooldown timer
-		mov bulletCooldown, 5     ; Set cooldown to 5 (adjustable)
-
-	skipGenerateBullet:
-		; Decrease cooldown timer if active
-		cmp bulletCooldown, 0
-		jle updateBullets
-		dec bulletCooldown
-
-	updateBullets:
-		mov bx, 0                 ; Initialize bullet index
-	updateBulletLoop:
-		cmp bx, bulletCount
-		jge endUpdate             ; Exit loop if all bullets are processed
-
-		; Calculate the address of the current bullet
-		mov ax, bx
-		mov edx, 8
-		mul edx
-		lea edi, bullets[eax]     ; edi points to bullets[bx]
-
-		; Update the Y-coordinate of the bullet
-		mov ecx, [edi + 4]
-		dec ecx
-		mov [edi + 4], ecx
-
-		; Draw the bullet at the new position
-		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR bullet, 4, bullets[bx] , ADDR count
-
-		; Move to the next bullet
-		inc bx
-		jmp updateBulletLoop
-
-	endUpdate:
         ; Delay for a short period
         INVOKE Sleep, 50
+
+
+    ; checkShoot:
+		; Check if the Space key is pressed
+		; INVOKE GetAsyncKeyState, VK_SPACE
+		; test ax, 8000h
+		; jz releaseSpace
+		; If the Space key is pressed, set spacePressed = 1
+		; mov spacePressed, 1
+		; jmp generateBullet
+
+	; releaseSpace:
+		; If the Space key is not pressed, reset spacePressed to 0
+		; mov spacePressed, 0
+		; jmp updateBullets
+
+	; generateBullet:
+		; If the Space key is pressed and cooldown is complete, generate a new bullet
+		; cmp spacePressed, 1
+		; jne updateBullets         ; Skip bullet generation if the Space key is not pressed
+
+		; cmp bulletCooldown, 0     ; Check cooldown timer
+		; jne skipGenerateBullet    ; Skip if cooldown is not complete
+
+		; Check if the maximum number of bullets is reached
+		; cmp bulletCount, 10
+		; jge skipGenerateBullet
+
+		; Set the initial position of the new bullet
+		; mov bx, airplanePos.x
+		; add bx, 5                 ; Bullet X position is slightly right of the airplane's center
+		; mov ax, bulletCount   ; 將 bulletCount 放入 ax
+		; mov cx, 8             ; COORD 結構的大小（8 bytes）
+		; mul cx                ; ax = bulletCount * 8
+		; mov bx, ax            ; bx 現在是 offset
+		; mov bullets[bx], ebx   ; 設定子彈的 X 座標
+
+		; mov ax, airplanePos.y
+		; sub ax, 3                 ; Bullet Y position is above the airplane
+		; mov bullets[bx + 4], eax
+
+		; Increase the bullet count
+		; inc bulletCount
+
+		; Reset cooldown timer
+		; mov bulletCooldown, 5     ; Set cooldown to 5 (adjustable)
+
+	; skipGenerateBullet:
+		; Decrease cooldown timer if active
+		; cmp bulletCooldown, 0
+		; jle updateBullets
+		; dec bulletCooldown
+
+	; updateBullets:
+		; mov bx, 0                 ; Initialize bullet index
+	; updateBulletLoop:
+		; cmp bx, bulletCount
+		; jge endUpdate             ; Exit loop if all bullets are processed
+
+		; Calculate the address of the current bullet
+		; mov ax, bx
+		; mov edx, 8
+		; mul edx
+		; lea edi, bullets[eax]     ; edi points to bullets[bx]
+
+		; Update the Y-coordinate of the bullet
+		; mov ecx, [edi + 4]
+		; dec ecx
+		; mov [edi + 4], ecx
+
+		; Draw the bullet at the new position
+		; INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR bullet, 4, bullets[bx] , ADDR count
+
+		; Move to the next bullet
+		; inc bx
+		; jmp updateBulletLoop
+
+	; endUpdate:
+        ; Delay for a short period
+        ; INVOKE Sleep, 50
 
 
 
@@ -427,50 +450,68 @@ main PROC
     checkBulletCollision1:
         cmp bulletPos.y, 5 ; If bullet is at the top of the screen, skip
         jne checkBulletCollision2
-        mov ax, enemyPos1.x
-        cmp bulletPos.x, ax ; Check1: bullet.x and enemy.x
-        jne checkBulletCollision2 ; skip        
-        mov enemyActive1, 0 ; If no skip, then collision happen, enemy1 died
-        mov bulletPos.y, 0 ; Reset bullet position
-        jmp checkBulletCollision2
-
+        mov ecx,7
+		mov ax, enemyPos1.x
+		L1:
+			cmp bulletPos.x, ax ; Check1: bullet.x and enemy.x
+			je bulletHitEnemy1 ; skip
+			inc ax
+			loop L1
+			jmp checkBulletCollision2
+		bulletHitEnemy1:
+			mov enemyActive1, 0 ; If no skip, then collision happen, enemy2 died
+			mov bulletPos.y, 0 ; Reset bullet position
+			jmp checkBulletCollision2
     ; Check if enemy2 is shot
     checkBulletCollision2:
         cmp bulletPos.y, 5 ; If bullet is at the top of the screen, skip
         jne checkBulletCollision3
-        mov ax, enemyPos2.x
-        cmp bulletPos.x, ax ; Check1: bullet.x and enemy.x
-        jne checkBulletCollision3 ; skip
-        mov enemyActive2, 0 ; If no skip, then collision happen, enemy2 died
-        mov bulletPos.y, 0 ; Reset bullet position
-        jmp checkBulletCollision3
-        
+		mov ecx,7
+		mov ax, enemyPos2.x
+		L2:
+			cmp bulletPos.x, ax ; Check1: bullet.x and enemy.x
+			je bulletHitEnemy2 ; skip
+			inc ax
+			loop L2
+			jmp checkBulletCollision3
+		bulletHitEnemy2:
+			mov enemyActive2, 0 ; If no skip, then collision happen, enemy2 died
+			mov bulletPos.y, 0 ; Reset bullet position
+			jmp checkBulletCollision3
     ; Check if enemy3 is shot
     checkBulletCollision3:
         cmp bulletPos.y, 5 ; If bullet is at the top of the screen, skip
         jne checkBulletCollision4
-        mov ax, enemyPos3.x
-        cmp bulletPos.x, ax ; Check1: bullet.x and enemy.x
-        jne checkBulletCollision4 ; skip
-        mov enemyActive3, 0 ; If no skip, then collision happen, enemy3 died
-        mov bulletPos.y, 0 ; Reset bullet position
-        jmp checkBulletCollision4
+        mov ecx,7
+		mov ax, enemyPos3.x
+		L3:
+			cmp bulletPos.x, ax ; Check1: bullet.x and enemy.x
+			je bulletHitEnemy3 ; skip
+			inc ax
+			loop L3
+			jmp checkBulletCollision4
+		bulletHitEnemy3:
+			mov enemyActive3, 0 ; If no skip, then collision happen, enemy2 died
+			mov bulletPos.y, 0 ; Reset bullet position
+			jmp checkBulletCollision4
      
     ; Check if enemy4 is shot
     checkBulletCollision4:
         cmp bulletPos.y, 5 ; If bullet is at the top of the screen, skip
         jne endBulletCollision
-        mov ax, enemyPos4.x
-        cmp bulletPos.x, ax ; Check1: bullet.x and enemy.x
-        jne endBulletCollision ; skip
-        mov enemyActive4, 0 ; If no skip, then collision happen, enemy4 died
-        mov bulletPos.y, 0 ; Reset bullet position
-        jmp endBulletCollision
+        mov ecx,7
+		mov ax, enemyPos4.x
+		L4:
+			cmp bulletPos.x, ax ; Check1: bullet.x and enemy.x
+			je bulletHitEnemy4 ; skip
+			inc ax
+			loop L4
+			jmp endBulletCollision
+		bulletHitEnemy4:
+			mov enemyActive4, 0 ; If no skip, then collision happen, enemy2 died
+			mov bulletPos.y, 0 ; Reset bullet position
+			jmp endBulletCollision
     endBulletCollision:
-
-
-
-
 
 
         ; If life is 0, end the game
