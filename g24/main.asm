@@ -88,6 +88,7 @@ winDraw2 BYTE 5ch,' ',5ch,' ',' ',' ',' ',' ',' ','/',' ','/','_',' ','_',7ch,' 
 winDraw3 BYTE ' ',5ch,' ',5ch,' ','/',5ch,' ','/',' ','/',' ',7ch,' ',7ch,7ch,' ',' ',5ch,7ch,' ',7ch,' ',7ch,' ',7ch,0
 winDraw4 BYTE ' ',' ',5ch,' ','V',' ',' ','V',' ','/',' ',' ',7ch,' ',7ch,7ch,' ',7ch,5ch,' ',' ',7ch,' ',7ch,'_',7ch,0
 winDraw5 BYTE ' ',' ',' ',5ch,'_','/',5ch,'_','/',' ',' ',7ch,'_','_','_',7ch,'_',7ch,' ',5ch,'_',7ch,' ','(','_',')',0
+playAgainPrompt BYTE 'PLAY AGAIN? (Y/N): ', 0
 
 ; Define "LOSE"
 losePos COORD <55,15>
@@ -96,6 +97,7 @@ loseDraw2 BYTE '|',' ',7ch,' ',' ',' ','/',' ','_',' ',5ch,'/',' ','_','_','_',7
 loseDraw3 BYTE '|',' ',7ch,' ',' ',7ch,' ',7ch,' ',7ch,' ',5ch,'_','_','_',' ',5ch,7ch,' ',' ','_',7ch,' ',' ',' ',7ch,' ',7ch,0
 loseDraw4 BYTE '|',' ',7ch,'_','_',7ch,' ',7ch,'_',7ch,' ',7ch,'_','_','_',')',' ',7ch,' ',7ch,'_','_','_',' ',' ',7ch,'_',7ch,0
 loseDraw5 BYTE '|','_','_','_','_','_',5ch,'_','_','_','/',7ch,'_','_','_','_','/',7ch,'_','_','_','_','_',7ch,' ','(','_',')',0
+playAgainPrompt BYTE 'PLAY AGAIN? (Y/N): ', 0
 
 
 ; Define others
@@ -508,6 +510,12 @@ main PROC
         inc losePos.y
         INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR loseDraw5, LENGTHOF loseDraw5, losePos, ADDR count
         INVOKE sleep, 5000
+        lea dx, playAgainPrompt
+        call displayPrompt  
+        cmp al, 'Y'         
+        je gameloop      
+        cmp al, 'y'          
+        je gameloop
         jmp exitGame
 
 
@@ -532,7 +540,19 @@ main PROC
         inc winPos.y
         INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR winDraw5, LENGTHOF winDraw5, winPos, ADDR count      
         INVOKE Sleep, 5000
+        lea dx, playAgainPrompt
+        call displayPrompt  
+        cmp al, 'Y'       
+        je gameloop      
+        cmp al, 'y'        
+        je gameloop
         jmp exitGame
+
+    displayPrompt:
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR promptText, LENGTHOF promptText, promptPos, ADDR count
+        INVOKE ReadConsoleInput, inputHandle, ADDR inputBuffer, 1, ADDR count
+        mov al, inputBuffer.AsciiChar 
+        ret
    
     exitGame:
         exit

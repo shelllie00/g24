@@ -1,4 +1,8 @@
+<<<<<<< Updated upstream
 Microsoft (R) Macro Assembler Version 14.42.34435.0	    12/21/24 23:04:12
+=======
+Microsoft (R) Macro Assembler Version 14.42.34435.0	    12/21/24 22:51:49
+>>>>>>> Stashed changes
 main.asm						     Page 1 - 1
 
 
@@ -215,42 +219,70 @@ main.asm						     Page 1 - 1
 	   7C 5F 7C 20 5C
 	   5F 7C 20 28 5F
 	   29 00
+ 000001AF 50 4C 41 59 20	playAgainPrompt BYTE 'PLAY AGAIN? (Y/N): ', 0
+	   41 47 41 49 4E
+	   3F 20 28 59 2F
+	   4E 29 3A 20 00
 
 				; Define "LOSE"
+<<<<<<< Updated upstream
  000002E9 0037 000F		losePos COORD <55,15>
  000002ED 20 5F 20 20 20	loseDraw1 BYTE ' ','_',' ',' ',' ',' ',' ','_','_','_',' ',' ','_','_','_','_',' ',' ','_','_','_','_','_',' ',' ',' ','_',' ',0
+=======
+ 000001C3 0037 000F		losePos COORD <55,15>
+ 000001C7 20 5F 20 20 20	loseDraw1 BYTE ' ','_',' ',' ',' ',' ',' ','_','_','_',' ',' ','_','_','_','_',' ',' ','_','_','_','_','_',' ',' ',' ','_',' ',0
+>>>>>>> Stashed changes
 	   20 20 5F 5F 5F
 	   20 20 5F 5F 5F
 	   5F 20 20 5F 5F
 	   5F 5F 5F 20 20
 	   20 5F 20 00
+<<<<<<< Updated upstream
  0000030A 7C 20 7C 20 20	loseDraw2 BYTE '|',' ',7ch,' ',' ',' ','/',' ','_',' ',5ch,'/',' ','_','_','_',7ch,7ch,' ','_','_','_','_',7ch,' ',7ch,' ',7ch,0
+=======
+ 000001E4 7C 20 7C 20 20	loseDraw2 BYTE '|',' ',7ch,' ',' ',' ','/',' ','_',' ',5ch,'/',' ','_','_','_',7ch,7ch,' ','_','_','_','_',7ch,' ',7ch,' ',7ch,0
+>>>>>>> Stashed changes
 	   20 2F 20 5F 20
 	   5C 2F 20 5F 5F
 	   5F 7C 7C 20 5F
 	   5F 5F 5F 7C 20
 	   7C 20 7C 00
+<<<<<<< Updated upstream
  00000327 7C 20 7C 20 20	loseDraw3 BYTE '|',' ',7ch,' ',' ',7ch,' ',7ch,' ',7ch,' ',5ch,'_','_','_',' ',5ch,7ch,' ',' ','_',7ch,' ',' ',' ',7ch,' ',7ch,0
+=======
+ 00000201 7C 20 7C 20 20	loseDraw3 BYTE '|',' ',7ch,' ',' ',7ch,' ',7ch,' ',7ch,' ',5ch,'_','_','_',' ',5ch,7ch,' ',' ','_',7ch,' ',' ',' ',7ch,' ',7ch,0
+>>>>>>> Stashed changes
 	   7C 20 7C 20 7C
 	   20 5C 5F 5F 5F
 	   20 5C 7C 20 20
 	   5F 7C 20 20 20
 	   7C 20 7C 00
+<<<<<<< Updated upstream
  00000344 7C 20 7C 5F 5F	loseDraw4 BYTE '|',' ',7ch,'_','_',7ch,' ',7ch,'_',7ch,' ',7ch,'_','_','_',')',' ',7ch,' ',7ch,'_','_','_',' ',' ',7ch,'_',7ch,0
+=======
+ 0000021E 7C 20 7C 5F 5F	loseDraw4 BYTE '|',' ',7ch,'_','_',7ch,' ',7ch,'_',7ch,' ',7ch,'_','_','_',')',' ',7ch,' ',7ch,'_','_','_',' ',' ',7ch,'_',7ch,0
+>>>>>>> Stashed changes
 	   7C 20 7C 5F 7C
 	   20 7C 5F 5F 5F
 	   29 20 7C 20 7C
 	   5F 5F 5F 20 20
 	   7C 5F 7C 00
+<<<<<<< Updated upstream
  00000361 7C 5F 5F 5F 5F	loseDraw5 BYTE '|','_','_','_','_','_',5ch,'_','_','_','/',7ch,'_','_','_','_','/',7ch,'_','_','_','_','_',7ch,' ','(','_',')',0
+=======
+ 0000023B 7C 5F 5F 5F 5F	loseDraw5 BYTE '|','_','_','_','_','_',5ch,'_','_','_','/',7ch,'_','_','_','_','/',7ch,'_','_','_','_','_',7ch,' ','(','_',')',0
+>>>>>>> Stashed changes
 	   5F 5C 5F 5F 5F
 	   2F 7C 5F 5F 5F
 	   5F 2F 7C 5F 5F
 	   5F 5F 5F 7C 20
 	   28 5F 29 00
+				playAgainPrompt BYTE 'PLAY AGAIN? (Y/N): ', 0
+main.asm(82) : error A2005:symbol redefinition : playAgainPrompt
 
 
 				; Define others
+<<<<<<< Updated upstream
  0000037E 00000000		outputHandle DWORD 0
  00000382 00000000		bytesWritten DWORD 0
  00000386 0082 001E		screenBuffer COORD <130,30>
@@ -264,6 +296,21 @@ main.asm						     Page 1 - 1
  0000039D 48 50 3A 03 03	lifeSymbol3 BYTE 'H','P',':',03h, 03h, 03h, 0
 	   03 00
  000003A4 0005 0003		lifePos COORD <5, 3>
+=======
+ 00000258 00000000		outputHandle DWORD 0
+ 0000025C 00000000		bytesWritten DWORD 0
+ 00000260 0082 001E		screenBuffer COORD <130,30>
+ 00000264 00000000		count DWORD 0
+
+				; Define lives
+ 00000268 00000003		life DWORD 3
+ 0000026C 48 50 3A 03 00	lifeSymbol1 BYTE 'H','P',':',03h,0
+ 00000271 48 50 3A 03 03	lifeSymbol2 BYTE 'H','P',':',03h, 03h, 0
+	   00
+ 00000277 48 50 3A 03 03	lifeSymbol3 BYTE 'H','P',':',03h, 03h, 03h, 0
+	   03 00
+ 0000027E 0005 0003		lifePos COORD <5, 3>
+>>>>>>> Stashed changes
 
  00000000			.code
 				SetConsoleOutputCP PROTO STDCALL :DWORD
@@ -273,7 +320,11 @@ main.asm						     Page 1 - 1
 				    ; Initialize console
 				    INVOKE SetConsoleOutputCP, 65001 ; Set console output to UTF-8
 				    INVOKE GetStdHandle, STD_OUTPUT_HANDLE
+<<<<<<< Updated upstream
  00000011  A3 0000037E R	    mov outputHandle, eax
+=======
+ 00000011  A3 00000258 R	    mov outputHandle, eax
+>>>>>>> Stashed changes
  00000016  E8 00000000 E	    call Clrscr
 
 				    ; Draw Start Message
@@ -335,6 +386,7 @@ main.asm						     Page 1 - 1
 
 
 				        ; Draw life
+<<<<<<< Updated upstream
  000001E6  83 3D 0000038E R	        cmp life, 3
 	   03
  000001ED  74 12		        je drawlife3
@@ -342,6 +394,15 @@ main.asm						     Page 1 - 1
 	   02
  000001F6  74 28		        je drawlife2
  000001F8  83 3D 0000038E R	        cmp life, 1
+=======
+ 00000020  83 3D 00000268 R	        cmp life, 3
+	   03
+ 00000027  74 12		        je drawlife3
+ 00000029  83 3D 00000268 R	        cmp life, 2
+	   02
+ 00000030  74 28		        je drawlife2
+ 00000032  83 3D 00000268 R	        cmp life, 1
+>>>>>>> Stashed changes
 	   01
  000001FF  74 3E		        je drawlife1
 
@@ -463,8 +524,13 @@ main.asm						     Page 1 - 1
  00000550  66| FF 05		        inc enemyBulletPos2.y ; Bullet drop
 	   0000010F R
 				     
+<<<<<<< Updated upstream
  00000557			    drawEnemy3:
  00000557  80 3D 00000123 R	        cmp enemyActive3, 0 ; Check if enemy is active
+=======
+ 00000391			    drawEnemy3:
+ 00000391  80 3D 00000123 R	        cmp enemyActive3, 0 ; Check if enemy is active
+>>>>>>> Stashed changes
 	   00
  0000055E  0F 84 000000FE	        je drawEnemy4
 				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape3draw5, LENGTHOF enemyShape3draw5, enemyPos3, ADDR count
@@ -610,9 +676,15 @@ main.asm						     Page 1 - 1
  0000082B  66| 83 C0 0A		        add ax, 10
  0000082F  66| 39 05		        cmp enemyBulletPos1.x, ax ; Check3: enemyBullet.x is between the range of plane.x
 	   00000105 R
+<<<<<<< Updated upstream
  00000836  7F 18		        jg checkEnemyCollision2 ; skip
  00000838  FF 0D 0000038E R	        dec life    ; If no skip, then collision happen
  0000083E  66| C7 05		        mov enemyBulletPos1.x, 30 ; Reset enemyBullet1 position
+=======
+ 00000670  7F 18		        jg checkEnemyCollision2 ; skip
+ 00000672  FF 0D 00000268 R	        dec life    ; If no skip, then collision happen
+ 00000678  66| C7 05		        mov enemyBulletPos1.x, 30 ; Reset enemyBullet1 position
+>>>>>>> Stashed changes
 	   00000105 R
 	   001E
  00000847  66| C7 05		        mov enemyBulletPos1.y, 5
@@ -638,9 +710,15 @@ main.asm						     Page 1 - 1
  0000087C  66| 83 C0 0A		        add ax, 10
  00000880  66| 39 05		        cmp enemyBulletPos2.x, ax ; Check3: enemyBullet.x is between the range of plane.x
 	   0000010D R
+<<<<<<< Updated upstream
  00000887  7F 18		        jg checkEnemyCollision3 ; skip
  00000889  FF 0D 0000038E R	        dec life    ; If no skip, then collision happen
  0000088F  66| C7 05		        mov enemyBulletPos2.x, 50 ; Reset enemyBullet2 position
+=======
+ 000006C1  7F 18		        jg checkEnemyCollision3 ; skip
+ 000006C3  FF 0D 00000268 R	        dec life    ; If no skip, then collision happen
+ 000006C9  66| C7 05		        mov enemyBulletPos2.x, 50 ; Reset enemyBullet2 position
+>>>>>>> Stashed changes
 	   0000010D R
 	   0032
  00000898  66| C7 05		        mov enemyBulletPos2.y, 5
@@ -665,9 +743,15 @@ main.asm						     Page 1 - 1
  000008CD  66| 83 C0 0A		        add ax, 10
  000008D1  66| 39 05		        cmp enemyBulletPos3.x, ax ; Check3: enemyBullet.x is between the range of plane.x
 	   00000115 R
+<<<<<<< Updated upstream
  000008D8  7F 18		        jg checkEnemyCollision4 ; skip
  000008DA  FF 0D 0000038E R	        dec life    ; If no skip, then collision happen
  000008E0  66| C7 05		        mov enemyBulletPos3.x, 90 ; Reset enemyBullet3 position
+=======
+ 00000712  7F 18		        jg checkEnemyCollision4 ; skip
+ 00000714  FF 0D 00000268 R	        dec life    ; If no skip, then collision happen
+ 0000071A  66| C7 05		        mov enemyBulletPos3.x, 90 ; Reset enemyBullet3 position
+>>>>>>> Stashed changes
 	   00000115 R
 	   005A
  000008E9  66| C7 05		        mov enemyBulletPos3.y, 5
@@ -692,9 +776,15 @@ main.asm						     Page 1 - 1
  0000091E  66| 83 C0 0A		        add ax, 10
  00000922  66| 39 05		        cmp enemyBulletPos4.x, ax ; Check3: enemyBullet.x is between the range of plane.x
 	   0000011D R
+<<<<<<< Updated upstream
  00000929  7F 18		        jg endEnemyCollision ; skip
  0000092B  FF 0D 0000038E R	        dec life    ; If no skip, then collision happen
  00000931  66| C7 05		        mov enemyBulletPos4.x, 110 ; Reset enemyBullet4 position
+=======
+ 00000763  7F 18		        jg endEnemyCollision ; skip
+ 00000765  FF 0D 00000268 R	        dec life    ; If no skip, then collision happen
+ 0000076B  66| C7 05		        mov enemyBulletPos4.x, 110 ; Reset enemyBullet4 position
+>>>>>>> Stashed changes
 	   0000011D R
 	   006E
  0000093A  66| C7 05		        mov enemyBulletPos4.y, 5
@@ -797,13 +887,21 @@ main.asm						     Page 1 - 1
  00000A1B			    endBulletCollision:
 
 				     ; If lose
+<<<<<<< Updated upstream
  00000A1B			    lose:
  00000A1B  83 3D 0000038E R	        cmp life, 0
 	   00
  00000A22  0F 85 000000C1	        jne checkWin
+=======
+ 00000855			    lose:
+ 00000855  83 3D 00000268 R	        cmp life, 0
+	   00
+ 0000085C  0F 85 000000DD	        jne checkWin
+>>>>>>> Stashed changes
 				        ;;;TODO DRAW LOSE;;;
  00000A28  E8 00000000 E	        call Clrscr
 				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR loseDraw1, LENGTHOF loseDraw1, losePos, ADDR count
+<<<<<<< Updated upstream
  00000A4A  66| FF 05		        inc losePos.y
 	   000002EB R
 				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR loseDraw2, LENGTHOF loseDraw2, losePos, ADDR count
@@ -853,6 +951,87 @@ main.asm						     Page 1 - 1
  00000BCD			main ENDP
 				END main
 Microsoft (R) Macro Assembler Version 14.42.34435.0	    12/21/24 23:04:12
+=======
+ 00000884  66| FF 05		        inc losePos.y
+	   000001C5 R
+				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR loseDraw2, LENGTHOF loseDraw2, losePos, ADDR count
+ 000008A8  66| FF 05		        inc losePos.y
+	   000001C5 R
+				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR loseDraw3, LENGTHOF loseDraw3, losePos, ADDR count
+ 000008CC  66| FF 05		        inc losePos.y
+	   000001C5 R
+				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR loseDraw4, LENGTHOF loseDraw4, losePos, ADDR count
+ 000008F0  66| FF 05		        inc losePos.y
+	   000001C5 R
+				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR loseDraw5, LENGTHOF loseDraw5, losePos, ADDR count
+				        INVOKE sleep, 5000
+ 0000091E  66| 8D 15		        lea dx, playAgainPrompt
+	   000001AF R
+ 00000925  E8 0000010E		        call displayPrompt  
+ 0000092A  3C 59		        cmp al, 'Y'         
+ 0000092C  0F 84 FFFFF6E9	        je gameloop      
+ 00000932  3C 79		        cmp al, 'y'          
+ 00000934  0F 84 FFFFF6E1	        je gameloop
+ 0000093A  E9 00000121		        jmp exitGame
+
+
+				    ; If win
+ 0000093F			    checkWin:
+ 0000093F  A0 00000121 R	        mov al, enemyActive1
+ 00000944  0A 05 00000122 R	        or al, enemyActive2
+ 0000094A  0A 05 00000123 R	        or al, enemyActive3
+ 00000950  0A 05 00000124 R	        or al, enemyActive4
+ 00000956  3C 00		        cmp al,0
+ 00000958  0F 85 FFFFF6BD	        jne gameLoop
+				   
+				        ; Draw "WIN!"
+ 0000095E  E8 00000000 E	        call Clrscr
+				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR winDraw1, LENGTHOF winDraw1, winPos, ADDR count
+ 00000980  66| FF 05		        inc winPos.y
+	   00000127 R
+				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR winDraw2, LENGTHOF winDraw2, winPos, ADDR count
+ 000009A4  66| FF 05		        inc winPos.y
+	   00000127 R
+				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR winDraw3, LENGTHOF winDraw3, winPos, ADDR count
+ 000009C8  66| FF 05		        inc winPos.y
+	   00000127 R
+				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR winDraw4, LENGTHOF winDraw4, winPos, ADDR count
+ 000009EC  66| FF 05		        inc winPos.y
+	   00000127 R
+				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR winDraw5, LENGTHOF winDraw5, winPos, ADDR count      
+				        INVOKE Sleep, 5000
+ 00000A1A  66| 8D 15		        lea dx, playAgainPrompt
+	   000001AF R
+ 00000A21  E8 00000012		        call displayPrompt  
+ 00000A26  3C 59		        cmp al, 'Y'       
+ 00000A28  0F 84 FFFFF5ED	        je gameloop      
+ 00000A2E  3C 79		        cmp al, 'y'        
+ 00000A30  0F 84 FFFFF5E5	        je gameloop
+ 00000A36  EB 28		        jmp exitGame
+
+ 00000A38			    displayPrompt:
+				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR promptText, LENGTHOF promptText, promptPos, ADDR count
+main.asm(495) : error A2006:undefined symbol : promptPos
+main.asm(495) : error A2114:INVOKE argument type mismatch : argument : 4
+main.asm(495) : error A2006:undefined symbol : promptText
+main.asm(495) : error A2114:INVOKE argument type mismatch : argument : 3
+main.asm(495) : error A2114:INVOKE argument type mismatch : argument : 2
+				        INVOKE ReadConsoleInput, inputHandle, ADDR inputBuffer, 1, ADDR count
+main.asm(496) : error A2006:undefined symbol : inputBuffer
+main.asm(496) : error A2114:INVOKE argument type mismatch : argument : 2
+main.asm(496) : error A2006:undefined symbol : inputHandle
+main.asm(496) : error A2114:INVOKE argument type mismatch : argument : 1
+				        mov al, inputBuffer.AsciiChar 
+main.asm(497) : error A2006:undefined symbol : inputBuffer
+ 00000A54  C3			        ret
+				   
+ 00000A60			    exitGame:
+				        exit
+
+ 00000A67			main ENDP
+				END main
+Microsoft (R) Macro Assembler Version 14.42.34435.0	    12/21/24 22:51:49
+>>>>>>> Stashed changes
 main.asm						     Symbols 2 - 1
 
 
@@ -946,8 +1125,13 @@ Segments and Groups:
 
 FLAT . . . . . . . . . . . . . .	GROUP
 STACK  . . . . . . . . . . . . .	32 Bit	 00001000 Para	  Stack	  'STACK'	 
+<<<<<<< Updated upstream
 _DATA  . . . . . . . . . . . . .	32 Bit	 000003A8 Para	  Public  'DATA'	
 _TEXT  . . . . . . . . . . . . .	32 Bit	 00000BCD Para	  Public  'CODE'	
+=======
+_DATA  . . . . . . . . . . . . .	32 Bit	 00000282 Para	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 00000A67 Para	  Public  'CODE'	
+>>>>>>> Stashed changes
 
 
 Procedures, parameters, and locals:
@@ -1056,6 +1240,7 @@ WriteStackFrame  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 WriteString  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteToFile  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteWindowsMsg  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+<<<<<<< Updated upstream
 main . . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000BCD Public STDCALL
   WaitForStart . . . . . . . . .	L Near	 000001B7 _TEXT	
   gameLoop . . . . . . . . . . .	L Near	 000001E1 _TEXT	
@@ -1098,6 +1283,50 @@ main . . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000BCD Public 
   lose . . . . . . . . . . . . .	L Near	 00000A1B _TEXT	
   checkWin . . . . . . . . . . .	L Near	 00000AE9 _TEXT	
   exitGame . . . . . . . . . . .	L Near	 00000BC6 _TEXT	
+=======
+main . . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000A67 Public STDCALL
+  gameLoop . . . . . . . . . . .	L Near	 0000001B _TEXT	
+  drawlife3  . . . . . . . . . .	L Near	 0000003B _TEXT	
+  drawlife2  . . . . . . . . . .	L Near	 0000005A _TEXT	
+  drawlife1  . . . . . . . . . .	L Near	 00000079 _TEXT	
+  drawAirplane . . . . . . . . .	L Near	 00000098 _TEXT	
+  skipBullet . . . . . . . . . .	L Near	 0000017B _TEXT	
+  drawenemy1 . . . . . . . . . .	L Near	 0000017B _TEXT	
+  bulletdrop1  . . . . . . . . .	L Near	 0000027F _TEXT	
+  drawEnemy2 . . . . . . . . . .	L Near	 00000286 _TEXT	
+  bulletdrop2  . . . . . . . . .	L Near	 0000038A _TEXT	
+  drawEnemy3 . . . . . . . . . .	L Near	 00000391 _TEXT	
+  bulletdrop3  . . . . . . . . .	L Near	 00000495 _TEXT	
+  drawEnemy4 . . . . . . . . . .	L Near	 0000049C _TEXT	
+  bulletdrop4  . . . . . . . . .	L Near	 000005A0 _TEXT	
+  endDrawEnemies . . . . . . . .	L Near	 000005A7 _TEXT	
+  checkRight . . . . . . . . . .	L Near	 000005C8 _TEXT	
+  checkShoot . . . . . . . . . .	L Near	 000005E9 _TEXT	
+  updateBullet . . . . . . . . .	L Near	 00000621 _TEXT	
+  endUpdate  . . . . . . . . . .	L Near	 00000632 _TEXT	
+  checkEnemyCollision1 . . . . .	L Near	 00000639 _TEXT	
+  checkEnemyCollision2 . . . . .	L Near	 0000068A _TEXT	
+  checkEnemyCollision3 . . . . .	L Near	 000006DB _TEXT	
+  checkEnemyCollision4 . . . . .	L Near	 0000072C _TEXT	
+  endEnemyCollision  . . . . . .	L Near	 0000077D _TEXT	
+  checkBulletCollision1  . . . .	L Near	 0000077D _TEXT	
+  L1 . . . . . . . . . . . . . .	L Near	 00000792 _TEXT	
+  bulletHitEnemy1  . . . . . . .	L Near	 000007A1 _TEXT	
+  checkBulletCollision2  . . . .	L Near	 000007B3 _TEXT	
+  L2 . . . . . . . . . . . . . .	L Near	 000007C8 _TEXT	
+  bulletHitEnemy2  . . . . . . .	L Near	 000007D7 _TEXT	
+  checkBulletCollision3  . . . .	L Near	 000007E9 _TEXT	
+  L3 . . . . . . . . . . . . . .	L Near	 000007FE _TEXT	
+  bulletHitEnemy3  . . . . . . .	L Near	 0000080D _TEXT	
+  checkBulletCollision4  . . . .	L Near	 0000081F _TEXT	
+  L4 . . . . . . . . . . . . . .	L Near	 00000834 _TEXT	
+  bulletHitEnemy4  . . . . . . .	L Near	 00000843 _TEXT	
+  endBulletCollision . . . . . .	L Near	 00000855 _TEXT	
+  lose . . . . . . . . . . . . .	L Near	 00000855 _TEXT	
+  checkWin . . . . . . . . . . .	L Near	 0000093F _TEXT	
+  displayPrompt  . . . . . . . .	L Near	 00000A38 _TEXT	
+  exitGame . . . . . . . . . . .	L Near	 00000A60 _TEXT	
+>>>>>>> Stashed changes
 printf . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 scanf  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 wsprintfA  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
@@ -1330,8 +1559,13 @@ blue . . . . . . . . . . . . . .	Number	 00000001h
 brown  . . . . . . . . . . . . .	Number	 00000006h   
 bulletPos  . . . . . . . . . . .	COORD	 0000003C _DATA	
 bullet . . . . . . . . . . . . .	Byte	 00000033 _DATA	
+<<<<<<< Updated upstream
 bytesWritten . . . . . . . . . .	DWord	 00000382 _DATA	
 count  . . . . . . . . . . . . .	DWord	 0000038A _DATA	
+=======
+bytesWritten . . . . . . . . . .	DWord	 0000025C _DATA	
+count  . . . . . . . . . . . . .	DWord	 00000264 _DATA	
+>>>>>>> Stashed changes
 cyan . . . . . . . . . . . . . .	Number	 00000003h   
 enemyActive1 . . . . . . . . . .	Byte	 00000121 _DATA	
 enemyActive2 . . . . . . . . . .	Byte	 00000122 _DATA	
@@ -1373,17 +1607,26 @@ exit . . . . . . . . . . . . . .	Text   	 INVOKE ExitProcess,0
 gray . . . . . . . . . . . . . .	Number	 00000008h   
 green  . . . . . . . . . . . . .	Number	 00000002h   
 initialAirplanePos . . . . . . .	COORD	 00000034 _DATA	
+<<<<<<< Updated upstream
 lifePos  . . . . . . . . . . . .	COORD	 000003A4 _DATA	
 lifeSymbol1  . . . . . . . . . .	Byte	 00000392 _DATA	
 lifeSymbol2  . . . . . . . . . .	Byte	 00000397 _DATA	
 lifeSymbol3  . . . . . . . . . .	Byte	 0000039D _DATA	
 life . . . . . . . . . . . . . .	DWord	 0000038E _DATA	
+=======
+lifePos  . . . . . . . . . . . .	COORD	 0000027E _DATA	
+lifeSymbol1  . . . . . . . . . .	Byte	 0000026C _DATA	
+lifeSymbol2  . . . . . . . . . .	Byte	 00000271 _DATA	
+lifeSymbol3  . . . . . . . . . .	Byte	 00000277 _DATA	
+life . . . . . . . . . . . . . .	DWord	 00000268 _DATA	
+>>>>>>> Stashed changes
 lightBlue  . . . . . . . . . . .	Number	 00000009h   
 lightCyan  . . . . . . . . . . .	Number	 0000000Bh   
 lightGray  . . . . . . . . . . .	Number	 00000007h   
 lightGreen . . . . . . . . . . .	Number	 0000000Ah   
 lightMagenta . . . . . . . . . .	Number	 0000000Dh   
 lightRed . . . . . . . . . . . .	Number	 0000000Ch   
+<<<<<<< Updated upstream
 loseDraw1  . . . . . . . . . . .	Byte	 000002ED _DATA	
 loseDraw2  . . . . . . . . . . .	Byte	 0000030A _DATA	
 loseDraw3  . . . . . . . . . . .	Byte	 00000327 _DATA	
@@ -1408,6 +1651,19 @@ startEnemyfacePos  . . . . . . .	COORD	 00000153 _DATA
 startMessage1  . . . . . . . . .	Byte	 00000129 _DATA	
 startMessage2  . . . . . . . . .	Byte	 0000013C _DATA	
 startPos . . . . . . . . . . . .	COORD	 00000125 _DATA	
+=======
+loseDraw1  . . . . . . . . . . .	Byte	 000001C7 _DATA	
+loseDraw2  . . . . . . . . . . .	Byte	 000001E4 _DATA	
+loseDraw3  . . . . . . . . . . .	Byte	 00000201 _DATA	
+loseDraw4  . . . . . . . . . . .	Byte	 0000021E _DATA	
+loseDraw5  . . . . . . . . . . .	Byte	 0000023B _DATA	
+losePos  . . . . . . . . . . . .	COORD	 000001C3 _DATA	
+magenta  . . . . . . . . . . . .	Number	 00000005h   
+outputHandle . . . . . . . . . .	DWord	 00000258 _DATA	
+playAgainPrompt  . . . . . . . .	Byte	 000001AF _DATA	
+red  . . . . . . . . . . . . . .	Number	 00000004h   
+screenBuffer . . . . . . . . . .	COORD	 00000260 _DATA	
+>>>>>>> Stashed changes
 white  . . . . . . . . . . . . .	Number	 0000000Fh   
 winDraw1 . . . . . . . . . . . .	Byte	 00000263 _DATA	
 winDraw2 . . . . . . . . . . . .	Byte	 0000027D _DATA	
@@ -1419,4 +1675,4 @@ wsprintf . . . . . . . . . . . .	Text   	 wsprintfA
 yellow . . . . . . . . . . . . .	Number	 0000000Eh   
 
 	   0 Warnings
-	   0 Errors
+	   11 Errors
