@@ -63,6 +63,24 @@ enemyActive2 BYTE 1
 enemyActive3 BYTE 1
 enemyActive4 BYTE 1
 
+;Define "PRESS TO START"
+startPos COORD <50,20>
+startMessage1 BYTE '+','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','+',0  ; Start message with '+' and '-'
+startMessage2 BYTE '|',' ','P','R','E','S','S',' ','T','O',' ','S','T','A','R','T',' ','|',0  ; Press to start message
+
+;Define enemy for start scene
+startEnemyPos COORD <42,12>
+startEnemyfacePos COORD <42,9>
+startEnemy1 BYTE ' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','@',' ',' ',' ',' ',' ',' ','@',0
+startEnemy2 BYTE ' ',' ',' ',' ','/',' ','\',' ',' ',' ',' ',' ','{',' ','_','_','_','_','_','}',' ',' ',' ',' ',' ',' ','/',' ','\',0    
+startEnemy3 BYTE ' ',' ','/',' ',' ','|',' ',' ','\','_','_','_','/','*','*','*','*','*','*','*','\','_','_','_','/',' ',' ','|',' ',' ','\',0   
+startEnemy4 BYTE ' ','(',' ',' ',' ','I',' ',' ','/',' ',' ',' ','-',' ',' ',' ',' ',' ',' ',' ','-',' ',' ',' ','\',' ',' ','I',' ',' ',' ',')',0  
+startEnemyface1 BYTE ' ',' ','\',' ',' ','|',' ',' ','|',' ',' ',' ','0',' ',' ',' ',' ',' ',' ',' ','0',' ',' ',' ','|',' ',' ','|',' ',' ','/',0  
+startEnemy6 BYTE ' ',' ',' ',' ','\',' ',' ',' ','|',' ',' ',' ',' ',' ',' ',' ','A',' ',' ',' ',' ',' ',' ',' ','|',' ',' ',' ','/',0     
+startEnemy7 BYTE ' ',' ',' ',' ',' ',' ','\','_','_',' ',' ',' ',' ','_','_','_','_','_','_','_',' ',' ',' ',' ','_','_','/',0       
+startEnemy8 BYTE ' ',' ',' ',' ',' ',' ',' ',' ',' ','\','_','_','_','_','_','_','_','_','_','_','_','_','_','/',0    
+startEnemyface2 BYTE ' ',' ','\',' ',' ','|',' ',' ','|',' ',' ',' ','>',' ',' ',' ',' ',' ',' ',' ','<',' ',' ',' ','|',' ',' ','|',' ',' ','/',0  
+
 ; Define "WIN!" 
 winPos COORD <55,15>
 winDraw1 BYTE '_','_',' ',' ',' ',' ',' ',' ',' ',' ','_','_','_','_','_',' ','_',' ',' ',' ','_',' ',' ',' ','_',0 
@@ -104,11 +122,50 @@ main PROC
     mov outputHandle, eax
     call Clrscr
 
+    ; Draw Start Message
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR startMessage1, LENGTHOF startMessage1, startPos, ADDR count
+		dec startPos.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR startMessage2, LENGTHOF startMessage2, startPos, ADDR count
+		dec startPos.y
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR startMessage1, LENGTHOF startMessage1, startPos, ADDR count
+		dec startPos.y
+		add startPos.y, 3
+
+    ;Draw enemypic
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR startEnemy8, LENGTHOF startEnemy8, startEnemyPos, ADDR count
+		dec startEnemyPos.y
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR startEnemy7, LENGTHOF startEnemy7, startEnemyPos, ADDR count
+		dec startEnemyPos.y
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR startEnemy6, LENGTHOF startEnemy6, startEnemyPos, ADDR count
+		dec startEnemyPos.y
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR startEnemyface1, LENGTHOF startEnemyface1, startEnemyPos, ADDR count
+		dec startEnemyPos.y
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR startEnemy4, LENGTHOF startEnemy4, startEnemyPos, ADDR count
+		dec startEnemyPos.y
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR startEnemy3, LENGTHOF startEnemy3, startEnemyPos, ADDR count
+		dec startEnemyPos.y
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR startEnemy2, LENGTHOF startEnemy2, startEnemyPos, ADDR count
+		dec startEnemyPos.y
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR startEnemy1, LENGTHOF startEnemy1, startEnemyPos, ADDR count
+        dec startEnemyPos.y
+		add startEnemyPos.y, 8
+
+
+    WaitForStart:
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR startEnemyface2, LENGTHOF startEnemyface2, startEnemyfacePos, ADDR count
+
+        ; Wait for player to press a key to start
+        INVOKE GetAsyncKeyState, VK_SPACE ; Check if any key is pressed 
+        test ax, 8000h              ; Test if the high bit is set (meaning key is pressed)
+        jz WaitForStart
+
 
     ; Main game loop
     gameLoop:
         ; Clear screen
         call Clrscr
+
+
 
         ; Draw life
         cmp life, 3
