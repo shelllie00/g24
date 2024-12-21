@@ -10,8 +10,8 @@ ScreenHeight = 30
 airplaneDraw1 BYTE ' ', ' ', ' ', ' ', ' ', '/', 5ch, 0
 airplaneDraw2 BYTE ' ', ' ', '_', '_', '/', ' ', ' ', 5ch, '_', '_', 0
 airplaneDraw3 BYTE '/', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', 5ch, 0
-airplaneDraw4 BYTE  ' ',' ',' ', ' ', '|', ' ', ' ', '|', 0
-airplaneDraw5 BYTE  ' ',' ', ' ', '/', '_', '|', '|', '_', 5ch, 0
+airplaneDraw4 BYTE  ' ',' ',' ', ' ', 7ch, ' ', ' ', 7ch, 0
+airplaneDraw5 BYTE  ' ',' ', ' ', '/', '_', 7ch, 7ch, '_', 5ch, 0
 bullet BYTE '*'
 initialAirplanePos COORD <ScreenWidth / 2, ScreenHeight - 2>
 airplanePos COORD <ScreenWidth / 2, ScreenHeight - 2>
@@ -40,8 +40,28 @@ enemyActive2 BYTE 1
 enemyActive3 BYTE 1
 enemyActive4 BYTE 1
 
+; Define "WIN!" 
+winPos COORD <55,15>
+winDraw1 BYTE '_','_',' ',' ',' ',' ',' ',' ',' ',' ','_','_','_','_','_',' ','_',' ',' ',' ','_',' ',' ',' ','_',0 
+winDraw2 BYTE 5ch,' ',5ch,' ',' ',' ',' ',' ',' ','/',' ','/','_',' ','_',7ch,' ',5ch,' ',7ch,' ',7ch,' ',7ch,' ',7ch,0
+winDraw3 BYTE ' ',5ch,' ',5ch,' ','/',5ch,' ','/',' ','/',' ',7ch,' ',7ch,7ch,' ',' ',5ch,7ch,' ',7ch,' ',7ch,' ',7ch,0
+winDraw4 BYTE ' ',' ',5ch,' ','V',' ',' ','V',' ','/',' ',' ',7ch,' ',7ch,7ch,' ',7ch,5ch,' ',' ',7ch,' ',7ch,'_',7ch,0
+winDraw5 BYTE ' ',' ',' ',5ch,'_','/',5ch,'_','/',' ',' ',7ch,'_','_','_',7ch,'_',7ch,' ',5ch,'_',7ch,' ','(','_',')',0
+
+; Define "LOSE"
+losePos COORD <55,15>
+loseDraw1 BYTE ' ','_',' ',' ',' ',' ',' ','_','_','_',' ',' ','_','_','_','_',' ',' ','_','_','_','_','_',' ',' ',' ','_',' ',0
+loseDraw2 BYTE '|',' ',7ch,' ',' ',' ','/',' ','_',' ',5ch,'/',' ','_','_','_',7ch,7ch,' ','_','_','_','_',7ch,' ',7ch,' ',7ch,0
+loseDraw3 BYTE '|',' ',7ch,' ',' ',7ch,' ',7ch,' ',7ch,' ',5ch,'_','_','_',' ',5ch,7ch,' ',' ','_',7ch,' ',' ',' ',7ch,' ',7ch,0
+loseDraw4 BYTE '|',' ',7ch,'_','_',7ch,' ',7ch,'_',7ch,' ',7ch,'_','_','_',')',' ',7ch,' ',7ch,'_','_','_',' ',' ',7ch,'_',7ch,0
+loseDraw5 BYTE '|','_','_','_','_','_',5ch,'_','_','_','/',7ch,'_','_','_','_','/',7ch,'_','_','_','_','_',7ch,' ','(','_',')',0
+
+
+
+
 ; Define others
 outputHandle DWORD 0
+screenBuffer COORD <130,30>
 bytesWritten DWORD 0
 count DWORD 0
 key DWORD ?
@@ -50,9 +70,9 @@ randomX DWORD ?
 ; Define scores and lives
 score DWORD 0
 life DWORD 3
-lifeSymbol1 BYTE 03h,0
-lifeSymbol2 BYTE 03h, 03h, 0
-lifeSymbol3 BYTE 03h, 03h, 03h, 0
+lifeSymbol1 BYTE 'H','P',':',03h,0
+lifeSymbol2 BYTE 'H','P',':',03h, 03h, 0
+lifeSymbol3 BYTE 'H','P',':',03h, 03h, 03h, 0
 lifePos COORD <5, 3>
 
 ; Define words
@@ -67,8 +87,8 @@ main PROC
     INVOKE SetConsoleOutputCP, 65001 ; Set console output to UTF-8
     INVOKE GetStdHandle, STD_OUTPUT_HANDLE
     mov outputHandle, eax
+    INVOKE SetConsoleScreenBufferSize, outputHandle, screenBuffer
     call Clrscr
-
 
     ; Main game loop
     gameLoop:
@@ -85,13 +105,13 @@ main PROC
 
     ; Draw life
     drawlife3:
-        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR lifeSymbol3, 3, lifePos, ADDR count
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR lifeSymbol3, 6, lifePos, ADDR count
         jmp drawAirplane
     drawlife2:
-        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR lifeSymbol2, 2, lifePos, ADDR count
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR lifeSymbol2, 5, lifePos, ADDR count
         jmp drawAirplane
     drawlife1:
-        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR lifeSymbol1, 1, lifePos, ADDR count
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR lifeSymbol1, 4, lifePos, ADDR count
         jmp drawAirplane
 
     ; Draw airplane
@@ -119,7 +139,7 @@ main PROC
         INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR bullet, 1, bulletPos, ADDR count
     skipBullet:
 
-        ; Draw enemies and their bullets
+    ; Draw enemies and their bullets
     drawenemy1:
         cmp enemyActive1, 0 ; Check if enemy is active 
         je drawEnemy2
@@ -292,7 +312,7 @@ main PROC
         jne checkBulletCollision2
         mov ax, enemyPos1.x
         cmp bulletPos.x, ax ; Check1: bullet.x and enemy.x
-        jne checkBulletCollision2 ; skip        
+        jne checkBulletCollision2 ; skip
         mov enemyActive1, 0 ; If no skip, then collision happen, enemy1 died
         mov bulletPos.y, 0 ; Reset bullet position
         jmp checkBulletCollision2
@@ -332,20 +352,49 @@ main PROC
     endBulletCollision:
 
 
-
-
-
-
-        ; If life is 0, end the game
+    ; If lose
+    lose:
         cmp life, 0
-        jne gameLoop
+        jne checkWin
+        ;;;TODO DRAW LOSE;;;
+        call Clrscr
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR loseDraw1, LENGTHOF loseDraw1, losePos, ADDR count
+        inc losePos.y
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR loseDraw2, LENGTHOF loseDraw2, losePos, ADDR count
+        inc losePos.y
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR loseDraw3, LENGTHOF loseDraw3, losePos, ADDR count
+        inc losePos.y
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR loseDraw4, LENGTHOF loseDraw4, losePos, ADDR count
+        inc losePos.y
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR loseDraw5, LENGTHOF loseDraw5, losePos, ADDR count
+        INVOKE sleep, 5000
+        jmp exitGame
 
-    endGame:
-        ; Display game over message
-        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR GameOverMsg, 5, lifePos, ADDR count
-        INVOKE Sleep, 50
-        
-        
+
+    ; If win
+    checkWin:
+        mov al, enemyActive1
+        or al, enemyActive2
+        or al, enemyActive3
+        or al, enemyActive4
+        cmp al,0
+        jne gameLoop
+   
+        ; Draw "WIN!"
+        call Clrscr
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR winDraw1, LENGTHOF winDraw1, winPos, ADDR count
+        inc winPos.y
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR winDraw2, LENGTHOF winDraw2, winPos, ADDR count
+        inc winPos.y
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR winDraw3, LENGTHOF winDraw3, winPos, ADDR count
+        inc winPos.y
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR winDraw4, LENGTHOF winDraw4, winPos, ADDR count
+        inc winPos.y
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR winDraw5, LENGTHOF winDraw5, winPos, ADDR count      
+        INVOKE Sleep, 5000
+        jmp exitGame
+   
+    exitGame:
         exit
 main ENDP
 END main
