@@ -12,20 +12,20 @@ airplaneDraw2 BYTE ' ', ' ', '_', '_', '/', ' ', ' ', 5ch, '_', '_', 0
 airplaneDraw3 BYTE '/', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', 5ch, 0
 airplaneDraw4 BYTE  ' ',' ',' ', ' ', '|', ' ', ' ', '|', 0
 airplaneDraw5 BYTE  ' ',' ', ' ', '/', '_', '|', '|', '_', 5ch, 0
-bullet BYTE '*'
+bullet BYTE '****'
 initialAirplanePos COORD <ScreenWidth / 2, ScreenHeight - 2>
 airplanePos COORD <ScreenWidth / 2, ScreenHeight - 2>
 bulletPos COORD <0, 0>
 
 ; Define enemies
 enemy1 BYTE 'E'
-enemyBullet1 BYTE 'o'
+enemyBullet1 BYTE 'b'
 enemy2 BYTE 'E'
-enemyBullet2 BYTE 'o'
+enemyBullet2 BYTE 'b'
 enemy3 BYTE 'E'
-enemyBullet3 BYTE 'o'
+enemyBullet3 BYTE 'b'
 enemy4 BYTE 'E'
-enemyBullet4 BYTE 'o'
+enemyBullet4 BYTE 'b'
 ; Define enemy positions and bullets
 enemyPos1 COORD <30, 5>
 enemyBulletPos1 COORD <30, 5>
@@ -46,6 +46,10 @@ bytesWritten DWORD 0
 count DWORD 0
 key DWORD ?
 randomX DWORD ?
+bulletCount WORD 0 ; Counter for active bullets
+bullets COORD 10 DUP(<0, 0>) ; Array to store multiple bullets' coordinates
+spacePressed BYTE 0        ; 0: Space key is not pressed, 1: Space key is pressed
+bulletCooldown DWORD 0     ; Counter for bullet generation cooldown
 
 ; Define scores and lives
 score DWORD 0
@@ -57,6 +61,8 @@ lifePos COORD <5, 3>
 
 ; Define words
 gameOverMsg BYTE "Game Over", 0
+
+main   EQU start@0
 
 .code
 SetConsoleOutputCP PROTO STDCALL :DWORD
@@ -114,10 +120,10 @@ main PROC
         add airplanePos.y, 5 ; Add back 5 to airplanePos.y
 
         ; Draw my bullet if active
-        cmp bulletPos.y, 0
-        je skipBullet
-        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR bullet, 1, bulletPos, ADDR count
-    skipBullet:
+        ;cmp bulletPos.y, 0
+        ;je skipBullet
+        ;INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR bullet, 1, bulletPos, ADDR count
+    ;skipBullet:
 
         ; Draw enemies and their bullets
     drawenemy1:
@@ -193,148 +199,152 @@ main PROC
         jmp checkShoot
 
     checkShoot:
-        INVOKE GetAsyncKeyState, VK_SPACE
-        test ax, 8000h
-        jz updateBullet
-        mov bx, airplanePos.x
-        add bx, 5 ; Adjust bullet position x
-        mov bulletPos.x, bx
-        mov bx, airplanePos.y
-        sub bx, 3 ; Adjust bullet position y
-        mov bulletPos.y, bx
-        dec bulletPos.y
+		; Check if the Space key is pressed
+		INVOKE GetAsyncKeyState, VK_SPACE
+		test ax, 8000h
+		jz releaseSpace
+		; If the Space key is pressed, set spacePressed = 1
+		mov spacePressed, 1
+		jmp generateBullet
 
-    updateBullet:
-        ; Update bullet position
-        cmp bulletPos.y, 0
-        je endUpdate
-        dec bulletPos.y
-    endUpdate:
+	releaseSpace:
+		; If the Space key is not pressed, reset spacePressed to 0
+		mov spacePressed, 0
+		jmp updateBullets
 
+	generateBullet:
+		; If the Space key is pressed and cooldown is complete, generate a new bullet
+		cmp spacePressed, 1
+		jne updateBullets         ; Skip bullet generation if the Space key is not pressed
+
+		cmp bulletCooldown, 0     ; Check cooldown timer
+		jne skipGenerateBullet    ; Skip if cooldown is not complete
+
+		; Check if the maximum number of bullets is reached
+		cmp bulletCount, 10
+		jge skipGenerateBullet
+
+		; Set the initial position of the new bullet
+		mov bx, airplanePos.x
+		add bx, 5                 ; Bullet X position is slightly right of the airplane's center
+		mov ax, bulletCount   ; 將 bulletCount 放入 ax
+		mov cx, 8             ; COORD 結構的大小（8 bytes）
+		mul cx                ; ax = bulletCount * 8
+		mov bx, ax            ; bx 現在是 offset
+		mov bullets[bx], ebx   ; 設定子彈的 X 座標
+
+		mov ax, airplanePos.y
+		sub ax, 3                 ; Bullet Y position is above the airplane
+		mov bullets[bx + 4], eax
+
+		; Increase the bullet count
+		inc bulletCount
+
+		; Reset cooldown timer
+		mov bulletCooldown, 5     ; Set cooldown to 5 (adjustable)
+
+	skipGenerateBullet:
+		; Decrease cooldown timer if active
+		cmp bulletCooldown, 0
+		jle updateBullets
+		dec bulletCooldown
+
+	updateBullets:
+		mov bx, 0                 ; Initialize bullet index
+	updateBulletLoop:
+		cmp bx, bulletCount
+		jge endUpdate             ; Exit loop if all bullets are processed
+
+		; Calculate the address of the current bullet
+		mov ax, bx
+		mov edx, 8
+		mul edx
+		lea edi, bullets[eax]     ; edi points to bullets[bx]
+
+		; Update the Y-coordinate of the bullet
+		mov ecx, [edi + 4]
+		dec ecx
+		mov [edi + 4], ecx
+
+		; Draw the bullet at the new position
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR bullet, 4, bullets[bx] , ADDR count
+
+		; Move to the next bullet
+		inc bx
+		jmp updateBulletLoop
+
+	endUpdate:
         ; Delay for a short period
         INVOKE Sleep, 50
 
-    ; Check if airplane is shot
+    ; Check for collision with enemy
     checkEnemyCollision1:    
         cmp enemyActive1, 0 ; If equal, enemy1 already died
         je checkEnemyCollision2
-       cmp enemyBulletPos1.y, ScreenHeight-5 ; Check1: enemyBullet.y and plane.y
+       cmp enemyBulletPos1.y, ScreenHeight - 6 ; Check1: enemyBullet.y and plane.y
         jl checkEnemyCollision2 ; Bullet still up in sky, skip
-        mov ax, airplanePos.x
-        sub ax, 1
-        cmp enemyBulletPos1.x, ax ; Check2: enemyBullet.x is between the range of plane.x
-        jl checkEnemyCollision2 ; skip
-        mov ax, airplanePos.x
-        add ax, 10
-        cmp enemyBulletPos1.x, ax ; Check3: enemyBullet.x is between the range of plane.x
+        mov ax, enemyBulletPos1.x
+        cmp ax, airplanePos.x - 2 ; Check2: enemyBullet.x is between the range of plane.x
         jg checkEnemyCollision2 ; skip
         dec life    ; If no skip, then collision happen
-        mov enemyBulletPos1.x, 30 ; Reset enemyBullet1 position
-        mov enemyBulletPos1.y, 5
-  
 
-    checkEnemyCollision2:
-    cmp enemyActive2, 0 ; If equal, enemy2 already died
-        je checkEnemyCollision3
-        cmp enemyBulletPos2.y, ScreenHeight-5 ; Check1: enemyBullet.y and plane.y
-        jl checkEnemyCollision3 ; Bullet still up in sky, skip
-        mov ax, airplanePos.x
-        sub ax, 1
-        cmp enemyBulletPos2.x, ax ; Check2: enemyBullet.x is between the range of plane.x
-        jl checkEnemyCollision3 ; skip
-        mov ax, airplanePos.x
-        add ax, 10
-        cmp enemyBulletPos2.x, ax ; Check3: enemyBullet.x is between the range of plane.x
-        jg checkEnemyCollision3 ; skip
-        dec life    ; If no skip, then collision happen
-        mov enemyBulletPos2.x, 50 ; Reset enemyBullet2 position
-        mov enemyBulletPos2.y, 5
+        checkEnemyCollision2:
 
-    checkEnemyCollision3:
-    cmp enemyActive3, 0 ; If equal, enemy3 already died
-        je checkEnemyCollision4
-        cmp enemyBulletPos3.y, ScreenHeight-5 ; Check1: enemyBullet.y and plane.y
-        jl checkEnemyCollision4 ; Bullet still up in sky, skip
-        mov ax, airplanePos.x
-        sub ax, 1
-        cmp enemyBulletPos3.x, ax ; Check2: enemyBullet.x is between the range of plane.x
-        jl checkEnemyCollision4 ; skip
-        mov ax, airplanePos.x
-        add ax, 10
-        cmp enemyBulletPos3.x, ax ; Check3: enemyBullet.x is between the range of plane.x
-        jg checkEnemyCollision4 ; skip
-        dec life    ; If no skip, then collision happen
-        mov enemyBulletPos3.x, 90 ; Reset enemyBullet3 position
-        mov enemyBulletPos3.y, 5
-
-    checkEnemyCollision4:
-    cmp enemyActive4, 0 ; If equal, enemy4 already died
-        je endEnemyCollision
-        cmp enemyBulletPos4.y, ScreenHeight-5 ; Check1: enemyBullet.y and plane.y
-        jl endEnemyCollision ; Bullet still up in sky, skip
-        mov ax, airplanePos.x
-        sub ax, 1
-        cmp enemyBulletPos4.x, ax ; Check2: enemyBullet.x is between the range of plane.x
-        jl endEnemyCollision ; skip
-        mov ax, airplanePos.x
-        add ax, 10
-        cmp enemyBulletPos4.x, ax ; Check3: enemyBullet.x is between the range of plane.x
-        jg endEnemyCollision ; skip
-        dec life    ; If no skip, then collision happen
-        mov enemyBulletPos4.x, 110 ; Reset enemyBullet4 position
-        mov enemyBulletPos4.y, 5
-    endEnemyCollision:
-              
-    
-    ;Check if enemy1 is shot
-    checkBulletCollision1:
-        cmp bulletPos.y, 5 ; If bullet is at the top of the screen, skip
-        jne checkBulletCollision2
-        mov ax, enemyPos1.x
-        cmp bulletPos.x, ax ; Check1: bullet.x and enemy.x
-        jne checkBulletCollision2 ; skip        
-        mov enemyActive1, 0 ; If no skip, then collision happen, enemy1 died
-        mov bulletPos.y, 0 ; Reset bullet position
-        jmp checkBulletCollision2
-
-    ; Check if enemy2 is shot
-    checkBulletCollision2:
-        cmp bulletPos.y, 5 ; If bullet is at the top of the screen, skip
-        jne checkBulletCollision3
-        mov ax, enemyPos2.x
-        cmp bulletPos.x, ax ; Check1: bullet.x and enemy.x
-        jne checkBulletCollision3 ; skip
-        mov enemyActive2, 0 ; If no skip, then collision happen, enemy2 died
-        mov bulletPos.y, 0 ; Reset bullet position
-        jmp checkBulletCollision3
         
-    ; Check if enemy3 is shot
-    checkBulletCollision3:
-        cmp bulletPos.y, 5 ; If bullet is at the top of the screen, skip
-        jne checkBulletCollision4
-        mov ax, enemyPos3.x
-        cmp bulletPos.x, ax ; Check1: bullet.x and enemy.x
-        jne checkBulletCollision4 ; skip
-        mov enemyActive3, 0 ; If no skip, then collision happen, enemy3 died
-        mov bulletPos.y, 0 ; Reset bullet position
-        jmp checkBulletCollision4
-     
-    ; Check if enemy4 is shot
-    checkBulletCollision4:
-        cmp bulletPos.y, 5 ; If bullet is at the top of the screen, skip
-        jne endBulletCollision
-        mov ax, enemyPos4.x
-        cmp bulletPos.x, ax ; Check1: bullet.x and enemy.x
-        jne endBulletCollision ; skip
-        mov enemyActive4, 0 ; If no skip, then collision happen, enemy4 died
-        mov bulletPos.y, 0 ; Reset bullet position
-        jmp endBulletCollision
-    endBulletCollision:
+    
+    
+    ;cmp byte ptr [edi], 0
+    ;    je skipEnemyCollision
+    ;    mov ax, (COORD PTR [esi]).x
+    ;    cmp ax, bulletPos.x
+    ;    jne skipEnemyCollision
+    ;    mov ax, (COORD PTR [esi]).y
+    ;    cmp ax, bulletPos.y
+    ;    jne skipEnemyCollision
+    ;    ; If collision, reset enemy position with random x and deactivate bullet
+    ;    mov byte ptr [edi], 0
+    ;    mov ax, ScreenWidth
+    ;    sub ax, 10
+    ;    INVOKE RandomRange
+    ;    mov (COORD PTR [esi]).x, ax
+    ;    mov (COORD PTR [esi]).y, 1
+    ;    mov byte ptr [edi], 1
+    ;    mov bulletPos.y, 0
+    ;skipEnemyCollision:
+    ;    cmp esi, OFFSET enemyPosArray + (NUM_ENEMIES - 1) * TYPE COORD  ; Check if it is the last enemy
+    ;    je endEnemyCollision
+    ;    add esi, TYPE COORD
+    ;    inc edi
+    ;    loop checkEnemyCollision
+    ;endEnemyCollision:
+    ;;;
 
 
-
-
-
+    ;;
+        ; Check for collision with airplane
+       ; mov ecx, NUM_ENEMIES
+        ;mov esi, OFFSET enemyBulletPosArray
+        ;mov edi, OFFSET enemyBulletActiveArray
+    ;checkAirplaneCollision:
+     ;   cmp byte ptr [edi], 0
+      ;  je skipAirplaneCollision
+       ; mov ax, (COORD PTR [esi]).x
+        ;cmp ax, airplanePos.x
+      ;  jne skipAirplaneCollision
+      ;  mov ax, (COORD PTR [esi]).y
+      ;  cmp ax, airplanePos.y
+      ;  jne skipAirplaneCollision
+        ; If collision, decrease life and deactivate bullet
+      ;  dec life
+       ; mov byte ptr [edi], 0
+    ;skipAirplaneCollision:
+        ;cmp esi, OFFSET enemyBulletPosArray + (NUM_ENEMIES - 1) * TYPE COORD ; Check if it is the last enemy bullet
+        ;je endairplaneCollision
+        ;add esi, TYPE COORD
+        ;inc edi
+        ;loop checkAirplaneCollision
+    ;endairplaneCollision:
+    ;;;
 
         ; If life is 0, end the game
         cmp life, 0
