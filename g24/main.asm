@@ -27,7 +27,7 @@ enemyShape1draw5 BYTE '|______|', 0
 
 enemyShape2draw1 BYTE '  _____', 0
 enemyShape2draw2 BYTE ' /     \ ', 0
-enemyShape2draw3 BYTE '|       |', 0
+enemyShape2draw3 BYTE '| -   - |', 0
 enemyShape2draw4 BYTE ' \_____/ ', 0
 enemyShape2draw5 BYTE '  (   )', 0
 
@@ -71,8 +71,8 @@ startMessage1 BYTE '+','-','-','-','-','-','-','-','-','-','-','-','-','-','-','
 startMessage2 BYTE '|',' ','P','R','E','S','S',' ','T','O',' ','S','T','A','R','T',' ','|',0  ; Press to start message
 
 ;Define enemy for start scene
-startEnemyPos COORD <42,12>
-startEnemyfacePos COORD <42,9>
+startEnemyPos COORD <43,12>
+startEnemyfacePos COORD <43,9>
 startEnemy1 BYTE '           @      @',0
 startEnemy2 BYTE '   / \     { _____}      / \',0    
 startEnemy3 BYTE ' /  |  \___/*******\___/  |  \   ',0   
@@ -90,7 +90,7 @@ boundaryPosRight COORD <0 , 0>
 boundaryDrawn BYTE 0
 
 ;addLife
-addLife BYTE '$'
+addLife BYTE '$'  ;green
 addLifePos COORD <25 , 5>  
 addLifeColor WORD 0A9h     
 dropPos WORD 33,85,112,78,90,35,110,17
@@ -99,14 +99,14 @@ flag WORD 0
 ;bomb (minus 2 life)
 bomb BYTE '#'
 bombPos COORD <77 , 5>  
-bombColor WORD 0C9h     
+bombColor WORD 0C9h     ;red
 dropBombPos WORD 66,44,33,99,41,28,100,50
 flagBomb WORD 0
 
 ;bomb2 (minus 1 life)
 bomb2 BYTE '!'
 bombPos2 COORD <20 , 5>  
-bombColor2 WORD 0E9h    
+bombColor2 WORD 0E9h    ;yellow
 dropBombPos2 WORD 44,55,22,99,88,101,66,77
 flagBomb2 WORD 0
 
@@ -202,19 +202,23 @@ main PROC
 
 
     WaitForStart:
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR startEnemyface1, LENGTHOF startEnemyface1, startEnemyfacePos, ADDR count
+
         ; Get current time-stamp counter value
         rdtsc               ; edx:eax = time-stamp counter
-        ; We will use the lower bit (least significant bit) to generate 0 or 1
-        mov ecx, 50          ; Load divisor (5) into ecx
+        
+        mov ecx, 500        ; Load divisor (5) into ecx
         xor edx, edx        ; Clear edx (required for division)
         div ecx             ; eax = eax / 5, edx = eax % 5 (remainder)
 
         cmp edx, 0          ; Compare remainder (edx) with 0
-        je face2
-        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR startEnemyface1, LENGTHOF startEnemyface1, startEnemyfacePos, ADDR count
-        jmp continue
-        face2:
+        jne continue
+        
 		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR startEnemyface2, LENGTHOF startEnemyface2, startEnemyfacePos, ADDR count
+        INVOKE Sleep, 250
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR startEnemyface1, LENGTHOF startEnemyface1, startEnemyfacePos, ADDR count
+        INVOKE Sleep, 500
+
         continue:
         ;keep waiting for press to start 
         ; Wait for player to press space to start
@@ -778,7 +782,7 @@ main PROC
         INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR loseDraw4, LENGTHOF loseDraw4, losePos, ADDR count
         inc losePos.y
         INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR loseDraw5, LENGTHOF loseDraw5, losePos, ADDR count
-
+        sub losePos.y, 4
         INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR retryDraw, LENGTHOF retryDraw, TextContinuePos, ADDR count
         INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR continueDraw, LENGTHOF continueDraw, TextRetryPos, ADDR count
 
@@ -822,6 +826,7 @@ main PROC
         INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR winDraw4, LENGTHOF winDraw4, winPos, ADDR count
         inc winPos.y
         INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR winDraw5, LENGTHOF winDraw5, winPos, ADDR count      
+        sub winPos.y, 4
 
         INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR retryDraw, LENGTHOF retryDraw, TextRetryPos, ADDR count
 
