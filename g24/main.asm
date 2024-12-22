@@ -70,11 +70,18 @@ boundaryPosRight COORD <0 , 0>
 boundaryDrawn BYTE 0
 
 ;addLife
-addLife BYTE 'A'
+addLife BYTE '$'
 addLifePos COORD <60 , 5>  
 addLifeColor WORD 0Ah     
-dropPos WORD 40,85,112,70,90,30,110,20
+dropPos WORD 40,85,112,70,90,35,110,20
 flag WORD 0
+
+;bomb
+bomb BYTE '#'
+bombPos COORD <77 , 5>  
+bombColor WORD 0Ch     
+dropBombPos WORD 66,44,33,99,41,28,100,50
+flagBomb WORD 0
 
 ; Define "WIN!" 
 winPos COORD <55,15>
@@ -327,6 +334,36 @@ main PROC
 		
 	EndGenerateLife:
 	
+	; Draw bomb
+	BombDraw:
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR bomb, 1, bombPos, ADDR count
+		invoke WriteConsoleOutputAttribute, outputHandle, ADDR bombColor, 1, bombPos, ADDR count
+		cmp bombPos.y, ScreenHeight-5 
+		jle bombDrop
+		cmp flagBomb,7
+		jge resetBombFlag
+		movzx ebx ,flag
+		shl ebx, 1  ;mul by 2
+		mov esi, OFFSET dropBombPos
+		inc flagBomb 
+		mov ax,[esi+ebx]
+		mov bombPos.x, ax 
+		mov bombPos.y, 5      ; Start at the top of the screen
+		jmp EndBomb
+		
+		bombDrop:
+		inc bombPos.y ; drop 
+		jmp EndBomb
+		
+		resetBombFlag:
+			mov flagBomb,0
+			mov ax,dropBombPos
+			mov bombPos.x, ax    
+			mov bombPos.y, 5      ; Start at the top of the screen
+			jmp EndBomb
+		
+	EndBomb:
+	
 	
 	
         ; Handle input
@@ -370,6 +407,37 @@ main PROC
 
         ; Delay for a short period
         INVOKE Sleep, 50
+		
+	checkGetBomb:    
+        cmp bombPos.y, ScreenHeight-5 
+        jl checkGetAddLife 
+		mov ax, airplanePos.x
+        sub ax, 1
+        cmp bombPos.x, ax 
+        jl checkGetAddLife ; skip
+        mov ax, airplanePos.x
+        add ax, 10
+        cmp bombPos.x, ax 
+        jg checkGetAddLife ; skip
+        sub life,2   ; If no skip, then collision happen
+		cmp flagBomb,7
+		jge resetBombFlag2
+		movzx ebx ,flagBomb
+		shl ebx, 1  ;mul by 2
+		mov esi, OFFSET dropBombPos
+		inc flagBomb 
+		mov ax,[esi+ebx]
+		mov bombPos.x, ax 
+		mov bombPos.y, 5  
+		
+		jmp checkGetAddLife   
+		
+		resetBombFlag2:
+			mov flagBomb,0
+			mov cx,dropPos
+			mov bombPos.x, cx
+			mov bombPos.y, 5 
+	
    
     checkGetAddLife:    
         cmp addLifePos.y, ScreenHeight-5 
