@@ -73,7 +73,7 @@ boundaryDrawn BYTE 0
 addLife BYTE 'A'
 addLifePos COORD <60 , 5>  
 addLifeColor WORD 0Ah     
-dropPos WORD 40,60,55,70,90,30,110,20
+dropPos WORD 40,85,112,70,90,30,110,20
 flag WORD 0
 
 ; Define "WIN!" 
@@ -374,6 +374,7 @@ main PROC
     checkGetAddLife:    
         cmp addLifePos.y, ScreenHeight-5 
         jl checkEnemyCollision1 
+		mov ax, airplanePos.x
         sub ax, 1
         cmp addLifePos.x, ax 
         jl checkEnemyCollision1 ; skip
