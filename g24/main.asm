@@ -127,6 +127,13 @@ loseDraw4 BYTE '|',' ',7ch,'_','_',7ch,' ',7ch,'_',7ch,' ',7ch,'_','_','_',')','
 loseDraw5 BYTE '|','_','_','_','_','_',5ch,'_','_','_','/',7ch,'_','_','_','_','/',7ch,'_','_','_','_','_',7ch,' ','(','_',')',0
 
 
+; Define play again or not
+continueDraw BYTE 'PRESS SPACE TO CONTINUE ', 0
+retryDraw BYTE 'PRESS ENTER TO PLAY AGAIN ', 0
+
+TextContinuePos COORD <60, 25>     
+TextRetryPos COORD <60, 27> 
+
 ; Define others
 outputHandle DWORD 0
 bytesWritten DWORD 0
@@ -149,6 +156,14 @@ Random PROTO min:WORD, max:WORD
 
 
 main PROC
+    againLoop:
+    
+    mov enemyActive1,1
+    mov enemyActive2,1
+    mov enemyActive3,1
+    mov enemyActive4,1
+    continuePlay:
+    mov life,3
     ; Initialize console
     INVOKE SetConsoleOutputCP, 65001 ; Set console output to UTF-8
     INVOKE GetStdHandle, STD_OUTPUT_HANDLE
@@ -209,6 +224,7 @@ main PROC
 
 
     ; Main game loop
+    
     gameLoop:
         ; Clear screen
         call Clrscr
@@ -762,7 +778,26 @@ main PROC
         INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR loseDraw4, LENGTHOF loseDraw4, losePos, ADDR count
         inc losePos.y
         INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR loseDraw5, LENGTHOF loseDraw5, losePos, ADDR count
-        INVOKE sleep, 5000
+
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR retryDraw, LENGTHOF retryDraw, TextContinuePos, ADDR count
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR continueDraw, LENGTHOF continueDraw, TextRetryPos, ADDR count
+
+
+        waitLoop:
+				; 檢查是否按下enter
+				INVOKE GetAsyncKeyState, VK_RETURN  
+				test eax, 8000h                     
+				jnz skipSleep                     
+
+                INVOKE GetAsyncKeyState, VK_SPACE
+				test eax, 8000h                     
+				jnz continuePlay      
+
+				; 如果沒有按鍵，則執行睡眠
+				INVOKE Sleep, 100                 
+				sub ecx, 10000                        ; 減少剩餘時間
+				jz exitGame                      
+				jnz waitLoop   
         jmp exitGame
 
 
@@ -777,6 +812,7 @@ main PROC
    
         ; Draw "WIN!"
         call Clrscr
+
         INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR winDraw1, LENGTHOF winDraw1, winPos, ADDR count
         inc winPos.y
         INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR winDraw2, LENGTHOF winDraw2, winPos, ADDR count
@@ -786,9 +822,26 @@ main PROC
         INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR winDraw4, LENGTHOF winDraw4, winPos, ADDR count
         inc winPos.y
         INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR winDraw5, LENGTHOF winDraw5, winPos, ADDR count      
-        INVOKE Sleep, 5000
-        jmp exitGame
+
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR retryDraw, LENGTHOF retryDraw, TextRetryPos, ADDR count
+
+        waitLoop2:
+				; 檢查是否按下enter
+				INVOKE GetAsyncKeyState, VK_RETURN  
+				test eax, 8000h                     
+				jnz skipSleep                     
+
+				; 如果沒有按鍵，則執行睡眠
+				INVOKE Sleep, 100                 
+				sub ecx, 10000                        ; 減少剩餘時間
+				jz exitGame                      
+				jnz waitLoop   
+        ;jmp exitGame
    
+
+   skipSleep:
+			jmp againLoop
+            
     exitGame:
         exit
 
