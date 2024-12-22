@@ -581,7 +581,5 @@ RandomGen PROC
     ret
 RandomGen ENDP
 
-
-
 END main
 
