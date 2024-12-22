@@ -6,6 +6,7 @@ MarginSize = 15 ; Margin size
 ScreenWidth = 130
 ScreenHeight = 30
 
+
 ; Define airplane
 airplaneDraw1 BYTE ' ', ' ', ' ', ' ', ' ', '/', 5ch, 0
 airplaneDraw2 BYTE ' ', ' ', '_', '_', '/', ' ', ' ', 5ch, '_', '_', 0
@@ -184,10 +185,24 @@ main PROC
 		add startEnemyPos.y, 8
 
 
-    WaitForStart:
-		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR startEnemyface2, LENGTHOF startEnemyface2, startEnemyfacePos, ADDR count
 
-        ; Wait for player to press a key to start
+    WaitForStart:
+        ; Get current time-stamp counter value
+        rdtsc               ; edx:eax = time-stamp counter
+        ; We will use the lower bit (least significant bit) to generate 0 or 1
+        mov ecx, 50          ; Load divisor (5) into ecx
+        xor edx, edx        ; Clear edx (required for division)
+        div ecx             ; eax = eax / 5, edx = eax % 5 (remainder)
+
+        cmp edx, 0          ; Compare remainder (edx) with 0
+        je face2
+        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR startEnemyface1, LENGTHOF startEnemyface1, startEnemyfacePos, ADDR count
+        jmp continue
+        face2:
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR startEnemyface2, LENGTHOF startEnemyface2, startEnemyfacePos, ADDR count
+        continue:
+        ;keep waiting for press to start 
+        ; Wait for player to press space to start
         INVOKE GetAsyncKeyState, VK_SPACE ; Check if any key is pressed 
         test ax, 8000h              ; Test if the high bit is set (meaning key is pressed)
         jz WaitForStart
