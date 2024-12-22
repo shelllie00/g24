@@ -44,22 +44,30 @@ enemyShape4draw4 BYTE '|  \_/  |', 0
 enemyShape4draw5 BYTE ' \_____/ ', 0
 
 
-enemy1 BYTE 'E'
-enemyBullet1 BYTE 'b'
-enemy2 BYTE 'E'
-enemyBullet2 BYTE 'b'
-enemy3 BYTE 'E'
-enemyBullet3 BYTE 'b'
-enemy4 BYTE 'E'
-enemyBullet4 BYTE 'b'
+enemyBullet1 BYTE 'o'
+enemyBullet2 BYTE 'o'
+enemyBullet3 BYTE 'o'
+enemyBullet4 BYTE 'o'
+
+boundary BYTE '||'
+boundaryPosLeft COORD <13, 0>
+boundaryPosRight COORD <0 , 0>
+boundaryDrawn BYTE 0
+
+;addLife
+addLife BYTE 'A'
+addLifePos COORD <0 , 0>  
+addLifeColor WORD 0Ah     
+
+
 ; Define enemy positions and bullets
-enemyPos1 COORD <26, 5>
+enemyPos1 COORD <26, 7>
 enemyBulletPos1 COORD <30, 5>
-enemyPos2 COORD <46, 5>
+enemyPos2 COORD <46, 7>
 enemyBulletPos2 COORD <50, 5>
-enemyPos3 COORD <76, 5>
+enemyPos3 COORD <76, 7>
 enemyBulletPos3 COORD <80, 5>
-enemyPos4 COORD <96, 5>
+enemyPos4 COORD <96, 7>
 enemyBulletPos4 COORD <100, 5>
 enemyActive1 BYTE 1
 enemyActive2 BYTE 1
@@ -96,14 +104,15 @@ lifeSymbol2 BYTE 'H','P',':',03h, 03h, 0
 lifeSymbol3 BYTE 'H','P',':',03h, 03h, 03h, 0
 lifePos COORD <5, 3>
 
-; Define words
-gameOverMsg BYTE "Game Over", 0
+Buffer  db  ScreenWidth * ScreenHeight dup(0)  ;
 
-main   EQU start@0
+main EQU start@0
 
 .code
 SetConsoleOutputCP PROTO STDCALL :DWORD
 GetAsyncKeyState PROTO STDCALL :DWORD
+Random PROTO min:WORD, max:WORD
+
 
 main PROC
     ; Initialize console
@@ -111,17 +120,16 @@ main PROC
     INVOKE GetStdHandle, STD_OUTPUT_HANDLE
     mov outputHandle, eax
     call Clrscr
-
-
+	
     ; Main game loop
     gameLoop:
         ; Clear screen
         call Clrscr
 		
 		;Draw boundary
-		mov boundaryPosRight.x, ScreenWidth - 13
-		mov boundaryPosLeft.y,1
-		mov boundaryPosRight.y,1
+		mov boundaryPosRight.x, ScreenWidth - 15
+		mov boundaryPosLeft.y,3
+		mov boundaryPosRight.y,3
 		
 		DrawBoundaryLeft:
 			INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR boundary, 2, boundaryPosLeft, ADDR count
@@ -138,7 +146,7 @@ main PROC
 			jmp DrawBoundaryRight
 			
 		EndBoundaryDrawing:
-
+		
         ; Draw life
         cmp life, 3
         je drawlife3
@@ -178,14 +186,17 @@ main PROC
                outputHandle, ADDR airplaneDraw1, LENGTHOF airplaneDraw1, airplanePos, ADDR count
         dec airplanePos.y
         add airplanePos.y, 5 ; Add back 5 to airplanePos.y
-	
-	
+		
+		
+		
 
         ; Draw my bullet if active
         cmp bulletPos.y, 0
         je skipBullet
         INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR bullet, 1, bulletPos, ADDR count
     skipBullet:
+	
+	
 
         ; Draw enemies and their bullets
     drawenemy1:
@@ -285,7 +296,27 @@ main PROC
         inc enemyBulletPos4.y ; Bullet drop
 
     endDrawEnemies:
+	
+		; Draw addLife
+		;invoke Random, 0, ScreenWidth
+		mov addLifePos.x, 60      ; Random x position
+		mov addLifePos.y, 5       ; Start at the top of the screen
+			
+	GenerateLife:
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR addLife, 1, addLifePos, ADDR count
+		invoke WriteConsoleOutputAttribute, outputHandle, ADDR addLifeColor, 1, addLifePos, ADDR count
+		cmp addLifePos.y, ScreenHeight-5 
+		jle addingLifeDrop
+		;invoke Random, 0, ScreenWidth
+		mov addLifePos.x, 60       ; Random x position
+		mov addLifePos.y, 5      ; Start at the top of the screen
+		jmp EndGenerateLife
 		
+		addingLifeDrop:
+		inc addLifePos.y ; drop 
+
+	EndGenerateLife:
+	
         ; Handle input
         INVOKE GetAsyncKeyState, VK_LEFT
         test ax, 8000h
@@ -299,7 +330,7 @@ main PROC
         INVOKE GetAsyncKeyState, VK_RIGHT
         test ax, 8000h
         jz checkShoot
-        cmp airplanePos.x, ScreenWidth - MarginSize -10; If airplanePos.x is at the right edge of the screen, do not move right
+        cmp airplanePos.x, ScreenWidth - MarginSize - 10; If airplanePos.x is at the right edge of the screen, do not move right
         jge checkShoot
         add airplanePos.x, 2
         jmp checkShoot
@@ -328,7 +359,22 @@ main PROC
         ; Delay for a short period
         INVOKE Sleep, 50
    
-    
+    checkGetAddLife:    
+        cmp addLifePos.y, ScreenHeight-5 ; Check1: enemyBullet.y and plane.y
+        jl checkEnemyCollision1 ; Bullet still up in sky, skip
+        mov ax, airplanePos.x
+        sub ax, 1
+        cmp addLifePos.x, ax ; Check2: enemyBullet.x is between the range of plane.x
+        jl checkEnemyCollision2 ; skip
+        mov ax, airplanePos.x
+        add ax, 10
+        cmp addLifePos.x, ax ; Check3: enemyBullet.x is between the range of plane.x
+        jg checkEnemyCollision1 ; skip
+        inc life    ; If no skip, then collision happen
+		;invoke Random, 0, ScreenWidth
+		mov addLifePos.x, 60       ; Random x position
+		mov addLifePos.y, 0        ; Start at the top of the screen
+	
 	; Check if airplane is shot
     checkEnemyCollision1:    
         cmp enemyActive1, 0 ; If equal, enemy1 already died
@@ -516,4 +562,26 @@ main PROC
         exit
 
 main ENDP
+Random PROC min:WORD, max:WORD
+    push bp
+    mov bp, sp
+    mov ax, min   ; min
+    mov bx, max  ; max
+    sub bx, ax       ; max - min
+    inc bx           ; (max - min + 1) to include max
+    call RandomGen   
+    xor dx, dx       
+    div bx         
+    add ax, min   
+    pop bp
+    ret
+Random ENDP
+RandomGen PROC
+    mov ax, 1234 
+    ret
+RandomGen ENDP
+
+
+
 END main
+
