@@ -49,17 +49,6 @@ enemyBullet2 BYTE 'o'
 enemyBullet3 BYTE 'o'
 enemyBullet4 BYTE 'o'
 
-boundary BYTE '||'
-boundaryPosLeft COORD <13, 0>
-boundaryPosRight COORD <0 , 0>
-boundaryDrawn BYTE 0
-
-;addLife
-addLife BYTE 'A'
-addLifePos COORD <0 , 0>  
-addLifeColor WORD 0Ah     
-
-
 ; Define enemy positions and bullets
 enemyPos1 COORD <26, 7>
 enemyBulletPos1 COORD <30, 5>
@@ -73,6 +62,19 @@ enemyActive1 BYTE 1
 enemyActive2 BYTE 1
 enemyActive3 BYTE 1
 enemyActive4 BYTE 1
+
+;Define boundary
+boundary BYTE '||'
+boundaryPosLeft COORD <13, 0>
+boundaryPosRight COORD <0 , 0>
+boundaryDrawn BYTE 0
+
+;addLife
+addLife BYTE 'A'
+addLifePos COORD <60 , 5>  
+addLifeColor WORD 0Ah     
+dropPos WORD 40,60,55,70,90,30,110,20
+flag WORD 0
 
 ; Define "WIN!" 
 winPos COORD <55,15>
@@ -127,21 +129,21 @@ main PROC
         call Clrscr
 		
 		;Draw boundary
-		mov boundaryPosRight.x, ScreenWidth - 15
+		mov boundaryPosRight.x, ScreenWidth - 13
 		mov boundaryPosLeft.y,3
 		mov boundaryPosRight.y,3
 		
 		DrawBoundaryLeft:
 			INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR boundary, 2, boundaryPosLeft, ADDR count
 			inc boundaryPosLeft.y
-			cmp boundaryPosLeft.y, ScreenHeight
+			cmp boundaryPosLeft.y, ScreenHeight-2
 			jge DrawBoundaryRight
 			jmp DrawBoundaryLeft
 		
 		DrawBoundaryRight:
 			INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR boundary, 2, boundaryPosRight, ADDR count
 			inc boundaryPosRight.y
-			cmp boundaryPosRight.y, ScreenHeight
+			cmp boundaryPosRight.y, ScreenHeight-2
 			jge EndBoundaryDrawing
 			jmp DrawBoundaryRight
 			
@@ -186,9 +188,7 @@ main PROC
                outputHandle, ADDR airplaneDraw1, LENGTHOF airplaneDraw1, airplanePos, ADDR count
         dec airplanePos.y
         add airplanePos.y, 5 ; Add back 5 to airplanePos.y
-		
-		
-		
+			
 
         ; Draw my bullet if active
         cmp bulletPos.y, 0
@@ -297,25 +297,37 @@ main PROC
 
     endDrawEnemies:
 	
-		; Draw addLife
-		;invoke Random, 0, ScreenWidth
-		mov addLifePos.x, 60      ; Random x position
-		mov addLifePos.y, 5       ; Start at the top of the screen
-			
+	; Draw addLife
 	GenerateLife:
 		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR addLife, 1, addLifePos, ADDR count
 		invoke WriteConsoleOutputAttribute, outputHandle, ADDR addLifeColor, 1, addLifePos, ADDR count
 		cmp addLifePos.y, ScreenHeight-5 
 		jle addingLifeDrop
-		;invoke Random, 0, ScreenWidth
-		mov addLifePos.x, 60       ; Random x position
+		cmp flag,7
+		jge resetFlag
+		movzx ebx ,flag
+		shl ebx, 1  ;mul by 2
+		mov esi, OFFSET dropPos
+		inc flag 
+		mov ax,[esi+ebx]
+		mov addLifePos.x, ax 
 		mov addLifePos.y, 5      ; Start at the top of the screen
 		jmp EndGenerateLife
 		
 		addingLifeDrop:
 		inc addLifePos.y ; drop 
-
+		jmp EndGenerateLife
+		
+		resetFlag:
+			mov flag,0
+			mov ax,dropPos
+			mov addLifePos.x, ax    
+			mov addLifePos.y, 5      ; Start at the top of the screen
+			jmp EndGenerateLife
+		
 	EndGenerateLife:
+	
+	
 	
         ; Handle input
         INVOKE GetAsyncKeyState, VK_LEFT
@@ -360,20 +372,35 @@ main PROC
         INVOKE Sleep, 50
    
     checkGetAddLife:    
-        cmp addLifePos.y, ScreenHeight-5 ; Check1: enemyBullet.y and plane.y
-        jl checkEnemyCollision1 ; Bullet still up in sky, skip
-        mov ax, airplanePos.x
+        cmp addLifePos.y, ScreenHeight-5 
+        jl checkEnemyCollision1 
         sub ax, 1
-        cmp addLifePos.x, ax ; Check2: enemyBullet.x is between the range of plane.x
-        jl checkEnemyCollision2 ; skip
+        cmp addLifePos.x, ax 
+        jl checkEnemyCollision1 ; skip
         mov ax, airplanePos.x
         add ax, 10
-        cmp addLifePos.x, ax ; Check3: enemyBullet.x is between the range of plane.x
+        cmp addLifePos.x, ax 
         jg checkEnemyCollision1 ; skip
+		cmp life,3
+		jge checkEnemyCollision1 
         inc life    ; If no skip, then collision happen
-		;invoke Random, 0, ScreenWidth
-		mov addLifePos.x, 60       ; Random x position
-		mov addLifePos.y, 0        ; Start at the top of the screen
+		cmp flag,7
+		jge resetFlag2
+		movzx ebx ,flag
+		shl ebx, 1  ;mul by 2
+		mov esi, OFFSET dropPos
+		inc flag 
+		mov ax,[esi+ebx]
+		mov addLifePos.x, ax 
+		mov addLifePos.y, 5  
+		
+		jmp checkEnemyCollision1   
+		
+		resetFlag2:
+			mov flag,0
+			mov cx,dropPos
+			mov addLifePos.x, cx
+			mov addLifePos.y, 5 
 	
 	; Check if airplane is shot
     checkEnemyCollision1:    
@@ -425,7 +452,7 @@ main PROC
         cmp enemyBulletPos3.x, ax ; Check3: enemyBullet.x is between the range of plane.x
         jg checkEnemyCollision4 ; skip
         dec life    ; If no skip, then collision happen
-        mov enemyBulletPos3.x, 90 ; Reset enemyBullet3 position
+        mov enemyBulletPos3.x, 80 ; Reset enemyBullet3 position
         mov enemyBulletPos3.y, 5
 
     checkEnemyCollision4:
@@ -442,7 +469,7 @@ main PROC
         cmp enemyBulletPos4.x, ax ; Check3: enemyBullet.x is between the range of plane.x
         jg endEnemyCollision ; skip
         dec life    ; If no skip, then collision happen
-        mov enemyBulletPos4.x, 110 ; Reset enemyBullet4 position
+        mov enemyBulletPos4.x, 100 ; Reset enemyBullet4 position
         mov enemyBulletPos4.y, 5
     endEnemyCollision:
               
@@ -562,24 +589,6 @@ main PROC
         exit
 
 main ENDP
-Random PROC min:WORD, max:WORD
-    push bp
-    mov bp, sp
-    mov ax, min   ; min
-    mov bx, max  ; max
-    sub bx, ax       ; max - min
-    inc bx           ; (max - min + 1) to include max
-    call RandomGen   
-    xor dx, dx       
-    div bx         
-    add ax, min   
-    pop bp
-    ret
-Random ENDP
-RandomGen PROC
-    mov ax, 1234 
-    ret
-RandomGen ENDP
 
 END main
 
