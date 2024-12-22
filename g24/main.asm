@@ -75,7 +75,7 @@ startEnemyfacePos COORD <42,9>
 startEnemy1 BYTE '           @      @',0
 startEnemy2 BYTE '   / \     { _____}      / \',0    
 startEnemy3 BYTE ' /  |  \___/*******\___/  |  \   ',0   
-startEnemy4 BYTE '(   I  /   ~   '   ~   \  I   )',0  
+startEnemy4 BYTE '(   I  /   ~   -   ~   \  I   )',0  
 startEnemyface1 BYTE ' \  |  |   0       0   |  |  /',0  
 startEnemy6 BYTE '   \   |       A       |   /',0     
 startEnemy7 BYTE '     \__    _______    __/',0       
