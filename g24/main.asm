@@ -71,17 +71,24 @@ boundaryDrawn BYTE 0
 
 ;addLife
 addLife BYTE '$'
-addLifePos COORD <60 , 5>  
-addLifeColor WORD 0Ah     
-dropPos WORD 40,85,112,70,90,35,110,20
+addLifePos COORD <25 , 5>  
+addLifeColor WORD 0A9h     
+dropPos WORD 33,85,112,78,90,35,110,17
 flag WORD 0
 
-;bomb
+;bomb (minus 2 life)
 bomb BYTE '#'
 bombPos COORD <77 , 5>  
-bombColor WORD 0Ch     
+bombColor WORD 0C9h     
 dropBombPos WORD 66,44,33,99,41,28,100,50
 flagBomb WORD 0
+
+;bomb2 (minus 1 life)
+bomb2 BYTE '!'
+bombPos2 COORD <20 , 5>  
+bombColor2 WORD 0E9h    
+dropBombPos2 WORD 44,55,22,99,88,101,66,77
+flagBomb2 WORD 0
 
 ; Define "WIN!" 
 winPos COORD <55,15>
@@ -112,8 +119,6 @@ lifeSymbol1 BYTE 'H','P',':',03h,0
 lifeSymbol2 BYTE 'H','P',':',03h, 03h, 0
 lifeSymbol3 BYTE 'H','P',':',03h, 03h, 03h, 0
 lifePos COORD <5, 3>
-
-Buffer  db  ScreenWidth * ScreenHeight dup(0)  ;
 
 main EQU start@0
 
@@ -342,7 +347,7 @@ main PROC
 		jle bombDrop
 		cmp flagBomb,7
 		jge resetBombFlag
-		movzx ebx ,flag
+		movzx ebx ,flagBomb
 		shl ebx, 1  ;mul by 2
 		mov esi, OFFSET dropBombPos
 		inc flagBomb 
@@ -357,12 +362,41 @@ main PROC
 		
 		resetBombFlag:
 			mov flagBomb,0
-			mov ax,dropBombPos
-			mov bombPos.x, ax    
+			mov bombPos.x, 55   
 			mov bombPos.y, 5      ; Start at the top of the screen
 			jmp EndBomb
 		
 	EndBomb:
+	
+	; Draw bomb
+	BombDraw2:
+		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR bomb2, 1, bombPos2, ADDR count
+		invoke WriteConsoleOutputAttribute, outputHandle, ADDR bombColor2, 1, bombPos2, ADDR count
+		cmp bombPos2.y, ScreenHeight-5 
+		jle bombDrop2
+		cmp flagBomb2,7
+		jge resetBombFlag2
+		movzx ebx ,flagBomb2
+		shl ebx, 1  ;mul by 2
+		mov esi, OFFSET dropBombPos2
+		inc flagBomb2 
+		mov ax,[esi+ebx]
+		mov bombPos2.x, ax 
+		mov bombPos2.y, 5      ; Start at the top of the screen
+		jmp EndBomb2
+		
+		bombDrop2:
+		inc bombPos2.y ; drop 
+		jmp EndBomb2
+		
+		resetBombFlag2:
+			mov flagBomb2,0
+			mov bombPos2.x,36 
+			mov bombPos2.y, 5      ; Start at the top of the screen
+			jmp EndBomb2
+		
+	EndBomb2:
+	
 	
 	
 	
@@ -410,18 +444,18 @@ main PROC
 		
 	checkGetBomb:    
         cmp bombPos.y, ScreenHeight-5 
-        jl checkGetAddLife 
+        jl checkGetBomb2 
 		mov ax, airplanePos.x
         sub ax, 1
         cmp bombPos.x, ax 
-        jl checkGetAddLife ; skip
+        jl checkGetBomb2 ; skip
         mov ax, airplanePos.x
         add ax, 10
         cmp bombPos.x, ax 
-        jg checkGetAddLife ; skip
+        jg checkGetBomb2 ; skip
         sub life,2   ; If no skip, then collision happen
 		cmp flagBomb,7
-		jge resetBombFlag2
+		jge resetBombFlag3
 		movzx ebx ,flagBomb
 		shl ebx, 1  ;mul by 2
 		mov esi, OFFSET dropBombPos
@@ -430,13 +464,41 @@ main PROC
 		mov bombPos.x, ax 
 		mov bombPos.y, 5  
 		
+		jmp checkGetBomb2   
+		
+		resetBombFlag3:
+			mov flagBomb,0
+			mov bombPos.x, 54
+			mov bombPos.y, 5 
+			
+	checkGetBomb2:    
+        cmp bombPos2.y, ScreenHeight-5 
+        jl checkGetAddLife 
+		mov ax, airplanePos.x
+        sub ax, 1
+        cmp bombPos2.x, ax 
+        jl checkGetAddLife ; skip
+        mov ax, airplanePos.x
+        add ax, 10
+        cmp bombPos2.x, ax 
+        jg checkGetAddLife ; skip
+        dec life   ; If no skip, then collision happen
+		cmp flagBomb2,7
+		jge resetBombFlag4
+		movzx ebx ,flagBomb2
+		shl ebx, 1  ;mul by 2
+		mov esi, OFFSET dropBombPos2
+		inc flagBomb2 
+		mov ax,[esi+ebx]
+		mov bombPos2.x, ax 
+		mov bombPos2.y, 5  
+		
 		jmp checkGetAddLife   
 		
-		resetBombFlag2:
-			mov flagBomb,0
-			mov cx,dropPos
-			mov bombPos.x, cx
-			mov bombPos.y, 5 
+		resetBombFlag4:
+			mov flagBomb2,0
+			mov bombPos2.x,77
+			mov bombPos2.y, 5 
 	
    
     checkGetAddLife:    
@@ -547,7 +609,7 @@ main PROC
     checkBulletCollision1:
         cmp bulletPos.y, 5 ; If bullet is at the top of the screen, skip
         jne checkBulletCollision2
-        mov ecx,7
+        mov ecx,8
 		mov ax, enemyPos1.x
 		L1:
 			cmp bulletPos.x, ax ; Check1: bullet.x and enemy.x
@@ -564,7 +626,7 @@ main PROC
     checkBulletCollision2:
         cmp bulletPos.y, 5 ; If bullet is at the top of the screen, skip
         jne checkBulletCollision3
-		mov ecx,7
+		mov ecx,9
 		mov ax, enemyPos2.x
 		L2:
 			cmp bulletPos.x, ax ; Check1: bullet.x and enemy.x
@@ -581,7 +643,7 @@ main PROC
     checkBulletCollision3:
         cmp bulletPos.y, 5 ; If bullet is at the top of the screen, skip
         jne checkBulletCollision4
-        mov ecx,7
+        mov ecx,8
 		mov ax, enemyPos3.x
 		L3:
 			cmp bulletPos.x, ax ; Check1: bullet.x and enemy.x
@@ -598,7 +660,7 @@ main PROC
     checkBulletCollision4:
         cmp bulletPos.y, 5 ; If bullet is at the top of the screen, skip
         jne endBulletCollision
-        mov ecx,7
+        mov ecx,8
 		mov ax, enemyPos4.x
 		L4:
 			cmp bulletPos.x, ax ; Check1: bullet.x and enemy.x
