@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 14.42.34435.0	    12/28/24 23:16:35
+Microsoft (R) Macro Assembler Version 14.42.34435.0	    12/28/24 23:18:34
 main.asm						     Page 1 - 1
 
 
@@ -1130,7 +1130,7 @@ main.asm						     Page 1 - 1
 								; 檢查是否按下enter
 								INVOKE GetAsyncKeyState, VK_RETURN  
  00000E43  A9 00008000						test eax, 8000h                     
- 00000E48  0F 85 0000013F					jnz skipSleep                     
+ 00000E48  0F 85 00000145					jnz skipSleep                     
 
 				                INVOKE GetAsyncKeyState, VK_SPACE
  00000E55  A9 00008000						test eax, 8000h                     
@@ -1139,9 +1139,9 @@ main.asm						     Page 1 - 1
 								; 如果沒有按鍵，則執行睡眠
 								INVOKE Sleep, 100                 
  00000E67  81 E9 00002710					sub ecx, 10000                        
- 00000E6D  0F 84 0000011F					jz exitGame                      
+ 00000E6D  0F 84 00000125					jz exitGame                      
  00000E73  75 C7						jnz waitLoop   
- 00000E75  E9 00000118		        jmp exitGame
+ 00000E75  E9 0000011E		        jmp exitGame
 
 
 				    ; If win
@@ -1179,27 +1179,27 @@ main.asm						     Page 1 - 1
 								; 檢查是否按下enter
 								INVOKE GetAsyncKeyState, VK_RETURN  
  00000F77  A9 00008000						test eax, 8000h                     
- 00000F7C  75 0F						jnz skipSleep                     
+ 00000F7C  75 15						jnz skipSleep                     
 
 								; 如果沒有按鍵，則執行睡眠
 								INVOKE Sleep, 100                 
-								;sub ecx, 10000       ; 減少剩餘時間
- 00000F85  74 0B						jz exitGame                      
- 00000F87  0F 85 FFFFFEAF					jnz waitLoop   
+ 00000F85  81 E9 00002710					sub ecx, 10000       ; 減少剩餘時間
+ 00000F8B  74 0B						jz exitGame                      
+ 00000F8D  0F 85 FFFFFEA9					jnz waitLoop   
 				        ;jmp exitGame
 				   
 
- 00000F8D			   skipSleep:
- 00000F8D  E9 FFFFF06E					jmp againLoop
+ 00000F93			   skipSleep:
+ 00000F93  E9 FFFFF068					jmp againLoop
 				            
- 00000F92			    exitGame:
+ 00000F98			    exitGame:
 				        exit
 
- 00000F99			main ENDP
+ 00000F9F			main ENDP
 
 				END main
 
-Microsoft (R) Macro Assembler Version 14.42.34435.0	    12/28/24 23:16:35
+Microsoft (R) Macro Assembler Version 14.42.34435.0	    12/28/24 23:18:34
 main.asm						     Symbols 2 - 1
 
 
@@ -1294,7 +1294,7 @@ Segments and Groups:
 FLAT . . . . . . . . . . . . . .	GROUP
 STACK  . . . . . . . . . . . . .	32 Bit	 00001000 Para	  Stack	  'STACK'	 
 _DATA  . . . . . . . . . . . . .	32 Bit	 0000041B Para	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 00000F99 Para	  Public  'CODE'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 00000F9F Para	  Public  'CODE'	
 
 
 Procedures, parameters, and locals:
@@ -1406,7 +1406,7 @@ WriteToFile  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 WriteWindowsMsg  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 printf . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 scanf  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
-start@0  . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000F99 Public STDCALL
+start@0  . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000F9F Public STDCALL
   againLoop  . . . . . . . . . .	L Near	 00000000 _TEXT	
   continuePlay . . . . . . . . .	L Near	 0000001C _TEXT	
   WaitForStart . . . . . . . . .	L Near	 000001DD _TEXT	
@@ -1473,8 +1473,8 @@ start@0  . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000F99 Public 
   waitLoop . . . . . . . . . . .	L Near	 00000E3C _TEXT	
   checkWin . . . . . . . . . . .	L Near	 00000E7A _TEXT	
   waitLoop2  . . . . . . . . . .	L Near	 00000F70 _TEXT	
-  skipSleep  . . . . . . . . . .	L Near	 00000F8D _TEXT	
-  exitGame . . . . . . . . . . .	L Near	 00000F92 _TEXT	
+  skipSleep  . . . . . . . . . .	L Near	 00000F93 _TEXT	
+  exitGame . . . . . . . . . . .	L Near	 00000F98 _TEXT	
 wsprintfA  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 
 

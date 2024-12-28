@@ -790,7 +790,7 @@ main PROC
 
 				; 如果沒有按鍵，則執行睡眠
 				INVOKE Sleep, 100                 
-				;sub ecx, 10000       ; 減少剩餘時間
+				sub ecx, 10000       ; 減少剩餘時間
 				jz exitGame                      
 				jnz waitLoop   
         ;jmp exitGame
