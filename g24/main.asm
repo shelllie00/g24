@@ -93,22 +93,16 @@ boundaryDrawn BYTE 0
 addLife BYTE '$'  ;green
 addLifePos COORD <25 , 5>  
 addLifeColor WORD 0A9h     
-dropPos WORD 33,85,112,78,90,35,110,17
-flag WORD 0
+dropAddLifePos WORD 33,85,112,78,90,35,110,17
+addLifeFlag WORD 0
 
 ;bomb (minus 2 life)
 bomb BYTE '#'
 bombPos COORD <77 , 5>  
 bombColor WORD 0C9h     ;red
-dropBombPos WORD 66,44,33,99,41,28,100,50
-flagBomb WORD 0
+dropBombPos WORD 66,44,99,41,32,28,100,50
+bombFlag WORD 0
 
-;bomb2 (minus 1 life)
-;bomb2 BYTE '!'
-;bombPos2 COORD <20 , 5>  
-;bombColor2 WORD 0E9h    ;yellow
-;dropBombPos2 WORD 44,55,22,99,88,101,66,77
-;flagBomb2 WORD 0
 
 ; Define "WIN!" 
 winPos COORD <46,10>
@@ -162,6 +156,8 @@ main PROC
     mov enemyActive2,1
     mov enemyActive3,1
     mov enemyActive4,1
+
+
     continuePlay:
     mov life,3
     ; Initialize console
@@ -203,19 +199,9 @@ main PROC
 
     WaitForStart:
         INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR startEnemyface1, LENGTHOF startEnemyface1, startEnemyfacePos, ADDR count
-
-        ; Get current time-stamp counter value
-        rdtsc               ; edx:eax = time-stamp counter
-        
-        mov ecx, 500        ; Load divisor (5) into ecx
-        xor edx, edx        ; Clear edx (required for division)
-        div ecx             ; eax = eax / 5, edx = eax % 5 (remainder)
-
-        cmp edx, 0          ; Compare remainder (edx) with 0
-        jne continue
         
 		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR startEnemyface2, LENGTHOF startEnemyface2, startEnemyfacePos, ADDR count
-        INVOKE Sleep, 250
+        ;INVOKE Sleep, 250
         INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR startEnemyface1, LENGTHOF startEnemyface1, startEnemyfacePos, ADDR count
         INVOKE Sleep, 500
 
@@ -372,6 +358,9 @@ main PROC
         jle bulletdrop3
         mov enemyBulletPos3.x, 80 ; Reset enemyBullet3 position
         mov enemyBulletPos3.y, 5
+                                                                           
+
+
         jmp drawEnemy4
         bulletdrop3:
         inc enemyBulletPos3.y ; Bullet drop
@@ -403,94 +392,66 @@ main PROC
     endDrawEnemies:
 	
 	; Draw addLife
-	GenerateLife:
+	drawAddLife:
 		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR addLife, 1, addLifePos, ADDR count
-		invoke WriteConsoleOutputAttribute, outputHandle, ADDR addLifeColor, 1, addLifePos, ADDR count
+		INVOKE WriteConsoleOutputAttribute, outputHandle, ADDR addLifeColor, 1, addLifePos, ADDR count
 		cmp addLifePos.y, ScreenHeight-5 
 		jle addingLifeDrop
-		cmp flag,7
-		jge resetFlag
-		movzx ebx ,flag
-		shl ebx, 1  ;mul by 2
-		mov esi, OFFSET dropPos
-		inc flag 
-		mov ax,[esi+ebx]
-		mov addLifePos.x, ax 
-		mov addLifePos.y, 5      ; Start at the top of the screen
-		jmp EndGenerateLife
+
+    setNewAddLifePos:
+		movzx ebx ,addLifeFlag
+		shl ebx, 1  ;mul by 2 
+		mov esi, OFFSET dropAddLifePos
+		inc addLifeFlag
+		mov ax,[esi+ebx]    ; Ax value is the next pos
+		mov addLifePos.x, ax  ; Reset the addLife pos.x
+		mov addLifePos.y, 5      ; Start at the top of the screen        
 		
-		addingLifeDrop:
+	addingLifeDrop:
 		inc addLifePos.y ; drop 
-		jmp EndGenerateLife
 		
-		resetFlag:
-			mov flag,0
-			mov ax,dropPos
-			mov addLifePos.x, ax    
-			mov addLifePos.y, 5      ; Start at the top of the screen
-			jmp EndGenerateLife
+    checkAddLifeFlag:
+        cmp addLifeFlag,7
+		jl endDrawAddLife
 		
-	EndGenerateLife:
+		resetAddLifeFlag:
+			mov addLifeFlag,0
+			;mov addLifePos.x, 25    
+			;mov addLifePos.y, 5      ; Start at the top of the screen
+			jmp EndDrawAddLife      
+		
+	EndDrawAddLife:
 	
 	; Draw bomb
 	BombDraw:
 		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR bomb, 1, bombPos, ADDR count
-		invoke WriteConsoleOutputAttribute, outputHandle, ADDR bombColor, 1, bombPos, ADDR count
+		INVOKE WriteConsoleOutputAttribute, outputHandle, ADDR bombColor, 1, bombPos, ADDR count
 		cmp bombPos.y, ScreenHeight-5 
 		jle bombDrop
-		cmp flagBomb,7
-		jge resetBombFlag
-		movzx ebx ,flagBomb
+
+    setNewBombPos:
+		movzx ebx ,bombFlag
 		shl ebx, 1  ;mul by 2
 		mov esi, OFFSET dropBombPos
-		inc flagBomb 
+		inc bombFlag 
 		mov ax,[esi+ebx]
 		mov bombPos.x, ax 
 		mov bombPos.y, 5      ; Start at the top of the screen
-		jmp EndBomb
 		
-		bombDrop:
+	bombDrop:
 		inc bombPos.y ; drop 
-		jmp EndBomb
+
+    checkBombFlag:
+        cmp bombFlag,7
+        jl endBombDraw
 		
 		resetBombFlag:
-			mov flagBomb,0
-			mov bombPos.x, 55   
-			mov bombPos.y, 5      ; Start at the top of the screen
-			jmp EndBomb
+			mov bombFlag,0
+			;mov bombPos.x, 77   
+			;mov bombPos.y, 5      ; Start at the top of the screen
+			jmp EndBombDraw
 		
-	EndBomb:
-	
-	; Draw bomb
-	;BombDraw2:
-		;INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR bomb2, 1, bombPos2, ADDR count
-		;invoke WriteConsoleOutputAttribute, outputHandle, ADDR bombColor2, 1, bombPos2, ADDR count
-		;cmp bombPos2.y, ScreenHeight-5 
-		;jle bombDrop2
-		;cmp flagBomb2,7
-		;jge resetBombFlag2
-		;movzx ebx ,flagBomb2
-		;shl ebx, 1  ;mul by 2
-		;mov esi, OFFSET dropBombPos2
-		;inc flagBomb2 
-		;mov ax,[esi+ebx]
-		;mov bombPos2.x, ax 
-		;mov bombPos2.y, 5      ; Start at the top of the screen
-		;jmp EndBomb2
-		
-		;bombDrop2:
-		;inc bombPos2.y ; drop 
-		;jmp EndBomb2
-		
-		;resetBombFlag2:
-			;mov flagBomb2,0
-			;mov bombPos2.x,36 
-			;mov bombPos2.y, 5      ; Start at the top of the screen
-			;jmp EndBomb2
-		
-	;EndBomb2:
-	
-	
+	EndBombDraw:
 	
 	
         ; Handle input
@@ -535,9 +496,10 @@ main PROC
         ; Delay for a short period
         INVOKE Sleep, 50
 		
+    ; Check if plane hit bomb
 	checkGetBomb:    
         cmp bombPos.y, ScreenHeight-5 
-        jl checkGetAddLife
+        jl checkGetAddLife  ;skip
 		mov ax, airplanePos.x
         sub ax, 1
         cmp bombPos.x, ax 
@@ -546,13 +508,18 @@ main PROC
         add ax, 10
         cmp bombPos.x, ax 
         jg checkGetAddLife ; skip
-        sub life,2   ; If no skip, then collision happen
-		cmp flagBomb,7
-		jge checkGetAddLife
-		movzx ebx ,flagBomb
+        sub life,2   
+        cmp life,0
+        jge skipSetLifeZero
+        mov life,0
+
+    skipSetLifeZero:
+		cmp bombFlag,7
+		jge resetBombFlag3
+		movzx ebx ,bombFlag
 		shl ebx, 1  ;mul by 2
 		mov esi, OFFSET dropBombPos
-		inc flagBomb 
+		inc bombFlag 
 		mov ax,[esi+ebx]
 		mov bombPos.x, ax 
 		mov bombPos.y, 5  
@@ -560,39 +527,10 @@ main PROC
 		jmp checkGetAddLife
 		
 		resetBombFlag3:
-			mov flagBomb,0
-			mov bombPos.x, 54
-			mov bombPos.y, 5 
+			mov bombFlag,0
+			;mov bombPos.x, 54
+			;mov bombPos.y, 5 
 			
-	;checkGetBomb2:    
-        ;cmp bombPos2.y, ScreenHeight-5 
-        ;jl checkGetAddLife 
-		;mov ax, airplanePos.x
-        ;sub ax, 1
-        ;cmp bombPos2.x, ax 
-        ;jl checkGetAddLife ; skip
-        ;mov ax, airplanePos.x
-        ;add ax, 10
-        ;cmp bombPos2.x, ax 
-        ;jg checkGetAddLife ; skip
-        ;dec life   ; If no skip, then collision happen
-		;cmp flagBomb2,7
-		;jge resetBombFlag4
-		;movzx ebx ,flagBomb2
-		;shl ebx, 1  ;mul by 2
-		;mov esi, OFFSET dropBombPos2
-		;inc flagBomb2 
-		;mov ax,[esi+ebx]
-		;mov bombPos2.x, ax 
-		;mov bombPos2.y, 5  
-		
-		;jmp checkGetAddLife   
-		
-		;resetBombFlag4:
-			;mov flagBomb2,0
-			;mov bombPos2.x,77
-			;mov bombPos2.y, 5 
-	
    
     checkGetAddLife:    
         cmp addLifePos.y, ScreenHeight-5 
@@ -605,15 +543,18 @@ main PROC
         add ax, 10
         cmp addLifePos.x, ax 
         jg checkEnemyCollision1 ; skip
-		cmp life,3
-		jge checkEnemyCollision1 
-        inc life    ; If no skip, then collision happen
-		cmp flag,7
+        inc life
+        cmp life,3
+        jle skipSetLifeThree
+        mov life,3
+
+    skipSetLifeThree:
+		cmp addLifeFlag,7
 		jge resetFlag2
-		movzx ebx ,flag
+		movzx ebx ,addLifeFlag
 		shl ebx, 1  ;mul by 2
-		mov esi, OFFSET dropPos
-		inc flag 
+		mov esi, OFFSET dropAddLifePos
+		inc addLifeFlag
 		mov ax,[esi+ebx]
 		mov addLifePos.x, ax 
 		mov addLifePos.y, 5  
@@ -621,10 +562,10 @@ main PROC
 		jmp checkEnemyCollision1   
 		
 		resetFlag2:
-			mov flag,0
-			mov cx,dropPos
-			mov addLifePos.x, cx
-			mov addLifePos.y, 5 
+			mov addLifeFlag,0
+			;mov cx,dropAddLifePos
+			;mov addLifePos.x, cx
+			;mov addLifePos.y, 5 
 	
 	; Check if airplane is shot
     checkEnemyCollision1:    
@@ -799,7 +740,7 @@ main PROC
 
 				; 如果沒有按鍵，則執行睡眠
 				INVOKE Sleep, 100                 
-				sub ecx, 10000                        ; 減少剩餘時間
+				sub ecx, 10000                        
 				jz exitGame                      
 				jnz waitLoop   
         jmp exitGame
@@ -807,6 +748,7 @@ main PROC
 
     ; If win
     checkWin:
+        ; Are all enemies died
         mov al, enemyActive1
         or al, enemyActive2
         or al, enemyActive3
@@ -838,7 +780,7 @@ main PROC
 
 				; 如果沒有按鍵，則執行睡眠
 				INVOKE Sleep, 100                 
-				sub ecx, 10000                        ; 減少剩餘時間
+				;sub ecx, 10000       ; 減少剩餘時間
 				jz exitGame                      
 				jnz waitLoop   
         ;jmp exitGame
