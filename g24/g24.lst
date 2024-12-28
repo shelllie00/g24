@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 14.42.34435.0	    12/28/24 17:54:14
+Microsoft (R) Macro Assembler Version 14.42.34435.0	    12/28/24 23:16:35
 main.asm						     Page 1 - 1
 
 
@@ -381,504 +381,514 @@ main.asm						     Page 1 - 1
 
 
 
- 000001DD			    WaitForStart:
+ 000001DD			        WaitForStart:
 				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR startEnemyface1, LENGTHOF startEnemyface1, startEnemyfacePos, ADDR count
+
+				        ; Get current time-stamp counter value
+ 000001FA  0F 31		        rdtsc               ; edx:eax = time-stamp counter
+				        
+ 000001FC  B9 000001F4		        mov ecx, 500        ; Load divisor (5) into ecx
+ 00000201  33 D2		        xor edx, edx        ; Clear edx (required for division)
+ 00000203  F7 F1		        div ecx             ; eax = eax / 5, edx = eax % 5 (remainder)
+
+ 00000205  83 FA 00		        cmp edx, 0          ; Compare remainder (edx) with 0
+ 00000208  75 4E		        jne continue
 				        
 						INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR startEnemyface2, LENGTHOF startEnemyface2, startEnemyfacePos, ADDR count
-				        ;INVOKE Sleep, 250
+				        INVOKE Sleep, 250
 				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR startEnemyface1, LENGTHOF startEnemyface1, startEnemyfacePos, ADDR count
 				        INVOKE Sleep, 500
 
- 0000023E			        continue:
+ 00000258			        continue:
 				        ;keep waiting for press to start 
 				        ; Wait for player to press space to start
 				        INVOKE GetAsyncKeyState, VK_SPACE ; Check if any key is pressed 
- 00000245  66| A9 8000		        test ax, 8000h              ; Test if the high bit is set (meaning key is pressed)
- 00000249  74 92		        jz WaitForStart
+ 0000025F  66| A9 8000		        test ax, 8000h              ; Test if the high bit is set (meaning key is pressed)
+ 00000263  0F 84 FFFFFF74	        jz WaitForStart
 
 
 				    ; Main game loop
 				    
- 0000024B			    gameLoop:
+ 00000269			    gameLoop:
 				        ; Clear screen
- 0000024B  E8 00000000 E	        call Clrscr
+ 00000269  E8 00000000 E	        call Clrscr
 						
 						;Draw boundary
- 00000250  66| C7 05				mov boundaryPosRight.x, ScreenWidth - 13
+ 0000026E  66| C7 05				mov boundaryPosRight.x, ScreenWidth - 13
 	   0000025F R
 	   0075
- 00000259  66| C7 05				mov boundaryPosLeft.y,3
+ 00000277  66| C7 05				mov boundaryPosLeft.y,3
 	   0000025D R
 	   0003
- 00000262  66| C7 05				mov boundaryPosRight.y,3
+ 00000280  66| C7 05				mov boundaryPosRight.y,3
 	   00000261 R
 	   0003
 						
- 0000026B					DrawBoundaryLeft:
+ 00000289					DrawBoundaryLeft:
 							INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR boundary, 2, boundaryPosLeft, ADDR count
- 00000288  66| FF 05					inc boundaryPosLeft.y
+ 000002A6  66| FF 05					inc boundaryPosLeft.y
 	   0000025D R
- 0000028F  66| 83 3D					cmp boundaryPosLeft.y, ScreenHeight-2
+ 000002AD  66| 83 3D					cmp boundaryPosLeft.y, ScreenHeight-2
 	   0000025D R 1C
- 00000297  7D 02					jge DrawBoundaryRight
- 00000299  EB D0					jmp DrawBoundaryLeft
+ 000002B5  7D 02					jge DrawBoundaryRight
+ 000002B7  EB D0					jmp DrawBoundaryLeft
 						
- 0000029B					DrawBoundaryRight:
+ 000002B9					DrawBoundaryRight:
 							INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR boundary, 2, boundaryPosRight, ADDR count
- 000002B8  66| FF 05					inc boundaryPosRight.y
+ 000002D6  66| FF 05					inc boundaryPosRight.y
 	   00000261 R
- 000002BF  66| 83 3D					cmp boundaryPosRight.y, ScreenHeight-2
+ 000002DD  66| 83 3D					cmp boundaryPosRight.y, ScreenHeight-2
 	   00000261 R 1C
- 000002C7  7D 02					jge EndBoundaryDrawing
- 000002C9  EB D0					jmp DrawBoundaryRight
+ 000002E5  7D 02					jge EndBoundaryDrawing
+ 000002E7  EB D0					jmp DrawBoundaryRight
 							
- 000002CB					EndBoundaryDrawing:
+ 000002E9					EndBoundaryDrawing:
 						
 				        ; Draw life
- 000002CB  83 3D 00000401 R	        cmp life, 3
+ 000002E9  83 3D 00000401 R	        cmp life, 3
 	   03
- 000002D2  74 12		        je drawlife3
- 000002D4  83 3D 00000401 R	        cmp life, 2
+ 000002F0  74 12		        je drawlife3
+ 000002F2  83 3D 00000401 R	        cmp life, 2
 	   02
- 000002DB  74 28		        je drawlife2
- 000002DD  83 3D 00000401 R	        cmp life, 1
+ 000002F9  74 28		        je drawlife2
+ 000002FB  83 3D 00000401 R	        cmp life, 1
 	   01
- 000002E4  74 3E		        je drawlife1
+ 00000302  74 3E		        je drawlife1
 
 				    ; Draw life
- 000002E6			    drawlife3:
+ 00000304			    drawlife3:
 				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR lifeSymbol3, 6, lifePos, ADDR count
- 00000303  EB 3E		        jmp drawAirplane
- 00000305			    drawlife2:
+ 00000321  EB 3E		        jmp drawAirplane
+ 00000323			    drawlife2:
 				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR lifeSymbol2, 5, lifePos, ADDR count
- 00000322  EB 1F		        jmp drawAirplane
- 00000324			    drawlife1:
+ 00000340  EB 1F		        jmp drawAirplane
+ 00000342			    drawlife1:
 				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR lifeSymbol1, 4, lifePos, ADDR count
- 00000341  EB 00		        jmp drawAirplane
+ 0000035F  EB 00		        jmp drawAirplane
 					
 					
 
 				    ; Draw airplane
- 00000343			    drawAirplane:
+ 00000361			    drawAirplane:
 				        INVOKE WriteConsoleOutputCharacter,
 				               outputHandle, ADDR airplaneDraw5, LENGTHOF airplaneDraw5, airplanePos, ADDR count
- 00000360  66| FF 0D		        dec airplanePos.y
+ 0000037E  66| FF 0D		        dec airplanePos.y
 	   0000003A R
 				        INVOKE WriteConsoleOutputCharacter,
 				               outputHandle, ADDR airplaneDraw4, LENGTHOF airplaneDraw4, airplanePos, ADDR count
- 00000384  66| FF 0D		        dec airplanePos.y
+ 000003A2  66| FF 0D		        dec airplanePos.y
 	   0000003A R
 				        INVOKE WriteConsoleOutputCharacter,
 				               outputHandle, ADDR airplaneDraw3, LENGTHOF airplaneDraw3, airplanePos, ADDR count
- 000003A8  66| FF 0D		        dec airplanePos.y
+ 000003C6  66| FF 0D		        dec airplanePos.y
 	   0000003A R
 				        INVOKE WriteConsoleOutputCharacter,
 				               outputHandle, ADDR airplaneDraw2, LENGTHOF airplaneDraw2, airplanePos, ADDR count
- 000003CC  66| FF 0D		        dec airplanePos.y
+ 000003EA  66| FF 0D		        dec airplanePos.y
 	   0000003A R
 				        INVOKE WriteConsoleOutputCharacter,
 				               outputHandle, ADDR airplaneDraw1, LENGTHOF airplaneDraw1, airplanePos, ADDR count
- 000003F0  66| FF 0D		        dec airplanePos.y
+ 0000040E  66| FF 0D		        dec airplanePos.y
 	   0000003A R
- 000003F7  66| 83 05		        add airplanePos.y, 5 ; Add back 5 to airplanePos.y
+ 00000415  66| 83 05		        add airplanePos.y, 5 ; Add back 5 to airplanePos.y
 	   0000003A R 05
 							
 
 				        ; Draw my bullet if active
- 000003FF  66| 83 3D		        cmp bulletPos.y, 0
+ 0000041D  66| 83 3D		        cmp bulletPos.y, 0
 	   0000003E R 00
- 00000407  74 1D		        je skipBullet
+ 00000425  74 1D		        je skipBullet
 				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR bullet, 1, bulletPos, ADDR count
- 00000426			    skipBullet:
+ 00000444			    skipBullet:
 					
 					
 
 				        ; Draw enemies and their bullets
- 00000426			    drawenemy1:
- 00000426  80 3D 00000121 R	        cmp enemyActive1, 0 ; Check if enemy is active 
+ 00000444			    drawenemy1:
+ 00000444  80 3D 00000121 R	        cmp enemyActive1, 0 ; Check if enemy is active 
 	   00
- 0000042D  0F 84 000000FE	        je drawEnemy2
+ 0000044B  0F 84 000000FE	        je drawEnemy2
 				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape1draw5, LENGTHOF enemyShape1draw5, enemyPos1, ADDR count
- 00000450  66| FF 0D				dec enemyPos1.y
+ 0000046E  66| FF 0D				dec enemyPos1.y
 	   00000103 R
 						INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape1draw4, LENGTHOF enemyShape1draw4, enemyPos1, ADDR count
- 00000474  66| FF 0D				dec enemyPos1.y
+ 00000492  66| FF 0D				dec enemyPos1.y
 	   00000103 R
 						INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape1draw3, LENGTHOF enemyShape1draw3, enemyPos1, ADDR count
- 00000498  66| FF 0D				dec enemyPos1.y
+ 000004B6  66| FF 0D				dec enemyPos1.y
 	   00000103 R
 						INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape1draw2, LENGTHOF enemyShape1draw3, enemyPos1, ADDR count
- 000004BC  66| FF 0D				dec enemyPos1.y
+ 000004DA  66| FF 0D				dec enemyPos1.y
 	   00000103 R
 						INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape1draw1, LENGTHOF enemyShape1draw1, enemyPos1, ADDR count
- 000004E0  66| FF 0D				dec enemyPos1.y
+ 000004FE  66| FF 0D				dec enemyPos1.y
 	   00000103 R
- 000004E7  66| 83 05				add enemyPos1.y, 5 
+ 00000505  66| 83 05				add enemyPos1.y, 5 
 	   00000103 R 05
 						
 						INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyBullet1, 1, enemyBulletPos1, ADDR count
- 0000050C  66| 83 3D		        cmp enemyBulletPos1.y, ScreenHeight-5 ; Check if enemy bullet is at the bottom of the screen
+ 0000052A  66| 83 3D		        cmp enemyBulletPos1.y, ScreenHeight-5 ; Check if enemy bullet is at the bottom of the screen
 	   00000107 R 19
- 00000514  7E 14		        jle bulletdrop1
- 00000516  66| C7 05		        mov enemyBulletPos1.x, 30 ; Reset enemyBullet1 position
+ 00000532  7E 14		        jle bulletdrop1
+ 00000534  66| C7 05		        mov enemyBulletPos1.x, 30 ; Reset enemyBullet1 position
 	   00000105 R
 	   001E
- 0000051F  66| C7 05		        mov enemyBulletPos1.y, 5
+ 0000053D  66| C7 05		        mov enemyBulletPos1.y, 5
 	   00000107 R
 	   0005
- 00000528  EB 07		        jmp drawEnemy2
- 0000052A			        bulletdrop1:
- 0000052A  66| FF 05		        inc enemyBulletPos1.y ; Bullet drop
+ 00000546  EB 07		        jmp drawEnemy2
+ 00000548			        bulletdrop1:
+ 00000548  66| FF 05		        inc enemyBulletPos1.y ; Bullet drop
 	   00000107 R
 
- 00000531			    drawEnemy2:
- 00000531  80 3D 00000122 R	        cmp enemyActive2, 0 ; Check if enemy is active
+ 0000054F			    drawEnemy2:
+ 0000054F  80 3D 00000122 R	        cmp enemyActive2, 0 ; Check if enemy is active
 	   00
- 00000538  0F 84 000000FE	        je drawEnemy3
+ 00000556  0F 84 000000FE	        je drawEnemy3
 				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape2draw5, LENGTHOF enemyShape2draw5, enemyPos2, ADDR count
- 0000055B  66| FF 0D				dec enemyPos2.y
+ 00000579  66| FF 0D				dec enemyPos2.y
 	   0000010B R
 						INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape2draw4, LENGTHOF enemyShape2draw4, enemyPos2, ADDR count
- 0000057F  66| FF 0D				dec enemyPos2.y
+ 0000059D  66| FF 0D				dec enemyPos2.y
 	   0000010B R
 						INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape2draw3, LENGTHOF enemyShape2draw3, enemyPos2, ADDR count
- 000005A3  66| FF 0D				dec enemyPos2.y
+ 000005C1  66| FF 0D				dec enemyPos2.y
 	   0000010B R
 						INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape2draw2, LENGTHOF enemyShape2draw3, enemyPos2, ADDR count
- 000005C7  66| FF 0D				dec enemyPos2.y
+ 000005E5  66| FF 0D				dec enemyPos2.y
 	   0000010B R
 						INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape2draw1, LENGTHOF enemyShape2draw1, enemyPos2, ADDR count
- 000005EB  66| FF 0D				dec enemyPos2.y
+ 00000609  66| FF 0D				dec enemyPos2.y
 	   0000010B R
- 000005F2  66| 83 05				add enemyPos2.y, 5 
+ 00000610  66| 83 05				add enemyPos2.y, 5 
 	   0000010B R 05
 						
 						INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyBullet2, 1, enemyBulletPos2, ADDR count
- 00000617  66| 83 3D		        cmp enemyBulletPos2.y, ScreenHeight-5 ; Check if enemy bullet is at the bottom of the screen
+ 00000635  66| 83 3D		        cmp enemyBulletPos2.y, ScreenHeight-5 ; Check if enemy bullet is at the bottom of the screen
 	   0000010F R 19
- 0000061F  7E 14		        jle bulletdrop2
- 00000621  66| C7 05		        mov enemyBulletPos2.x, 50 ; Reset enemyBullet2 position
+ 0000063D  7E 14		        jle bulletdrop2
+ 0000063F  66| C7 05		        mov enemyBulletPos2.x, 50 ; Reset enemyBullet2 position
 	   0000010D R
 	   0032
- 0000062A  66| C7 05		        mov enemyBulletPos2.y, 5
+ 00000648  66| C7 05		        mov enemyBulletPos2.y, 5
 	   0000010F R
 	   0005
- 00000633  EB 07		        jmp drawEnemy3
- 00000635			        bulletdrop2:
- 00000635  66| FF 05		        inc enemyBulletPos2.y ; Bullet drop
+ 00000651  EB 07		        jmp drawEnemy3
+ 00000653			        bulletdrop2:
+ 00000653  66| FF 05		        inc enemyBulletPos2.y ; Bullet drop
 	   0000010F R
 				     
- 0000063C			    drawEnemy3:
- 0000063C  80 3D 00000123 R	        cmp enemyActive3, 0 ; Check if enemy is active
+ 0000065A			    drawEnemy3:
+ 0000065A  80 3D 00000123 R	        cmp enemyActive3, 0 ; Check if enemy is active
 	   00
- 00000643  0F 84 000000FE	        je drawEnemy4
+ 00000661  0F 84 000000FE	        je drawEnemy4
 				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape3draw5, LENGTHOF enemyShape3draw5, enemyPos3, ADDR count
- 00000666  66| FF 0D				dec enemyPos3.y
+ 00000684  66| FF 0D				dec enemyPos3.y
 	   00000113 R
 						INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape3draw4, LENGTHOF enemyShape1draw3, enemyPos3, ADDR count
- 0000068A  66| FF 0D				dec enemyPos3.y
+ 000006A8  66| FF 0D				dec enemyPos3.y
 	   00000113 R
 						INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape3draw3, LENGTHOF enemyShape1draw3, enemyPos3, ADDR count
- 000006AE  66| FF 0D				dec enemyPos3.y
+ 000006CC  66| FF 0D				dec enemyPos3.y
 	   00000113 R
 						INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape3draw2, LENGTHOF enemyShape1draw3, enemyPos3, ADDR count
- 000006D2  66| FF 0D				dec enemyPos3.y
+ 000006F0  66| FF 0D				dec enemyPos3.y
 	   00000113 R
 						INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape3draw1, LENGTHOF enemyShape1draw3, enemyPos3, ADDR count
- 000006F6  66| FF 0D				dec enemyPos3.y
+ 00000714  66| FF 0D				dec enemyPos3.y
 	   00000113 R
- 000006FD  66| 83 05				add enemyPos3.y, 5
+ 0000071B  66| 83 05				add enemyPos3.y, 5
 	   00000113 R 05
 						
 						INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyBullet3, 1, enemyBulletPos3, ADDR count
- 00000722  66| 83 3D		        cmp enemyBulletPos3.y, ScreenHeight-5 ; Check if enemy bullet is at the bottom of the screen
+ 00000740  66| 83 3D		        cmp enemyBulletPos3.y, ScreenHeight-5 ; Check if enemy bullet is at the bottom of the screen
 	   00000117 R 19
- 0000072A  7E 14		        jle bulletdrop3
- 0000072C  66| C7 05		        mov enemyBulletPos3.x, 80 ; Reset enemyBullet3 position
+ 00000748  7E 14		        jle bulletdrop3
+ 0000074A  66| C7 05		        mov enemyBulletPos3.x, 80 ; Reset enemyBullet3 position
 	   00000115 R
 	   0050
- 00000735  66| C7 05		        mov enemyBulletPos3.y, 5
+ 00000753  66| C7 05		        mov enemyBulletPos3.y, 5
 	   00000117 R
 	   0005
 				                                                                           
 
 
- 0000073E  EB 07		        jmp drawEnemy4
- 00000740			        bulletdrop3:
- 00000740  66| FF 05		        inc enemyBulletPos3.y ; Bullet drop
+ 0000075C  EB 07		        jmp drawEnemy4
+ 0000075E			        bulletdrop3:
+ 0000075E  66| FF 05		        inc enemyBulletPos3.y ; Bullet drop
 	   00000117 R
 
- 00000747			    drawEnemy4:
- 00000747  80 3D 00000124 R	        cmp enemyActive4, 0 ; Check if enemy is active
+ 00000765			    drawEnemy4:
+ 00000765  80 3D 00000124 R	        cmp enemyActive4, 0 ; Check if enemy is active
 	   00
- 0000074E  0F 84 000000FE	        je endDrawEnemies
+ 0000076C  0F 84 000000FE	        je endDrawEnemies
 				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape4draw5, LENGTHOF enemyShape4draw5, enemyPos4, ADDR count
- 00000771  66| FF 0D				dec enemyPos4.y
+ 0000078F  66| FF 0D				dec enemyPos4.y
 	   0000011B R
 						INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape4draw4, LENGTHOF enemyShape4draw4, enemyPos4, ADDR count
- 00000795  66| FF 0D				dec enemyPos4.y
+ 000007B3  66| FF 0D				dec enemyPos4.y
 	   0000011B R
 						INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape4draw3, LENGTHOF enemyShape4draw3, enemyPos4, ADDR count
- 000007B9  66| FF 0D				dec enemyPos4.y
+ 000007D7  66| FF 0D				dec enemyPos4.y
 	   0000011B R
 						INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape4draw2, LENGTHOF enemyShape4draw3, enemyPos4, ADDR count
- 000007DD  66| FF 0D				dec enemyPos4.y
+ 000007FB  66| FF 0D				dec enemyPos4.y
 	   0000011B R
 						INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyShape4draw1, LENGTHOF enemyShape4draw1, enemyPos4, ADDR count
- 00000801  66| FF 0D				dec enemyPos4.y
+ 0000081F  66| FF 0D				dec enemyPos4.y
 	   0000011B R
- 00000808  66| 83 05				add enemyPos4.y ,5
+ 00000826  66| 83 05				add enemyPos4.y ,5
 	   0000011B R 05
 						
 						INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR enemyBullet4, 1, enemyBulletPos4, ADDR count
- 0000082D  66| 83 3D		        cmp enemyBulletPos4.y, ScreenHeight-5 ; Check if enemy bullet is at the bottom of the screen
+ 0000084B  66| 83 3D		        cmp enemyBulletPos4.y, ScreenHeight-5 ; Check if enemy bullet is at the bottom of the screen
 	   0000011F R 19
- 00000835  7E 14		        jle bulletdrop4
- 00000837  66| C7 05		        mov enemyBulletPos4.x, 100 ; Reset enemyBullet4 position
+ 00000853  7E 14		        jle bulletdrop4
+ 00000855  66| C7 05		        mov enemyBulletPos4.x, 100 ; Reset enemyBullet4 position
 	   0000011D R
 	   0064
- 00000840  66| C7 05		        mov enemyBulletPos4.y, 5
+ 0000085E  66| C7 05		        mov enemyBulletPos4.y, 5
 	   0000011F R
 	   0005
- 00000849  EB 07		        jmp endDrawEnemies
- 0000084B			        bulletdrop4:
- 0000084B  66| FF 05		        inc enemyBulletPos4.y ; Bullet drop
+ 00000867  EB 07		        jmp endDrawEnemies
+ 00000869			        bulletdrop4:
+ 00000869  66| FF 05		        inc enemyBulletPos4.y ; Bullet drop
 	   0000011F R
 
- 00000852			    endDrawEnemies:
+ 00000870			    endDrawEnemies:
 					
 					; Draw addLife
- 00000852				drawAddLife:
+ 00000870				drawAddLife:
 						INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR addLife, 1, addLifePos, ADDR count
 						INVOKE WriteConsoleOutputAttribute, outputHandle, ADDR addLifeColor, 1, addLifePos, ADDR count
- 0000088C  66| 83 3D				cmp addLifePos.y, ScreenHeight-5 
+ 000008AA  66| 83 3D				cmp addLifePos.y, ScreenHeight-5 
 	   00000267 R 19
- 00000894  7E 28				jle addingLifeDrop
+ 000008B2  7E 28				jle addingLifeDrop
 
- 00000896			    setNewAddLifePos:
- 00000896  0F B7 1D				movzx ebx ,addLifeFlag
+ 000008B4			    setNewAddLifePos:
+ 000008B4  0F B7 1D				movzx ebx ,addLifeFlag
 	   0000027B R
- 0000089D  D1 E3				shl ebx, 1  ;mul by 2 
- 0000089F  BE 0000026B R			mov esi, OFFSET dropAddLifePos
- 000008A4  66| FF 05				inc addLifeFlag
+ 000008BB  D1 E3				shl ebx, 1  ;mul by 2 
+ 000008BD  BE 0000026B R			mov esi, OFFSET dropAddLifePos
+ 000008C2  66| FF 05				inc addLifeFlag
 	   0000027B R
- 000008AB  66| 8B 04 1E				mov ax,[esi+ebx]    ; Ax value is the next pos
- 000008AF  66| A3				mov addLifePos.x, ax  ; Reset the addLife pos.x
+ 000008C9  66| 8B 04 1E				mov ax,[esi+ebx]    ; Ax value is the next pos
+ 000008CD  66| A3				mov addLifePos.x, ax  ; Reset the addLife pos.x
 	   00000265 R
- 000008B5  66| C7 05				mov addLifePos.y, 5      ; Start at the top of the screen        
+ 000008D3  66| C7 05				mov addLifePos.y, 5      ; Start at the top of the screen        
 	   00000267 R
 	   0005
 						
- 000008BE				addingLifeDrop:
- 000008BE  66| FF 05				inc addLifePos.y ; drop 
+ 000008DC				addingLifeDrop:
+ 000008DC  66| FF 05				inc addLifePos.y ; drop 
 	   00000267 R
 						
- 000008C5			    checkAddLifeFlag:
- 000008C5  66| 83 3D		        cmp addLifeFlag,7
+ 000008E3			    checkAddLifeFlag:
+ 000008E3  66| 83 3D		        cmp addLifeFlag,7
 	   0000027B R 07
- 000008CD  7C 0B				jl endDrawAddLife
+ 000008EB  7C 0B				jl endDrawAddLife
 						
- 000008CF					resetAddLifeFlag:
- 000008CF  66| C7 05					mov addLifeFlag,0
+ 000008ED					resetAddLifeFlag:
+ 000008ED  66| C7 05					mov addLifeFlag,0
 	   0000027B R
 	   0000
 							;mov addLifePos.x, 25    
 							;mov addLifePos.y, 5      ; Start at the top of the screen
- 000008D8  EB 00					jmp EndDrawAddLife      
+ 000008F6  EB 00					jmp EndDrawAddLife      
 						
- 000008DA				EndDrawAddLife:
+ 000008F8				EndDrawAddLife:
 					
 					; Draw bomb
- 000008DA				BombDraw:
+ 000008F8				BombDraw:
 						INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR bomb, 1, bombPos, ADDR count
 						INVOKE WriteConsoleOutputAttribute, outputHandle, ADDR bombColor, 1, bombPos, ADDR count
- 00000914  66| 83 3D				cmp bombPos.y, ScreenHeight-5 
+ 00000932  66| 83 3D				cmp bombPos.y, ScreenHeight-5 
 	   00000280 R 19
- 0000091C  7E 28				jle bombDrop
+ 0000093A  7E 28				jle bombDrop
 
- 0000091E			    setNewBombPos:
- 0000091E  0F B7 1D				movzx ebx ,bombFlag
+ 0000093C			    setNewBombPos:
+ 0000093C  0F B7 1D				movzx ebx ,bombFlag
 	   00000294 R
- 00000925  D1 E3				shl ebx, 1  ;mul by 2
- 00000927  BE 00000284 R			mov esi, OFFSET dropBombPos
- 0000092C  66| FF 05				inc bombFlag 
+ 00000943  D1 E3				shl ebx, 1  ;mul by 2
+ 00000945  BE 00000284 R			mov esi, OFFSET dropBombPos
+ 0000094A  66| FF 05				inc bombFlag 
 	   00000294 R
- 00000933  66| 8B 04 1E				mov ax,[esi+ebx]
- 00000937  66| A3				mov bombPos.x, ax 
+ 00000951  66| 8B 04 1E				mov ax,[esi+ebx]
+ 00000955  66| A3				mov bombPos.x, ax 
 	   0000027E R
- 0000093D  66| C7 05				mov bombPos.y, 5      ; Start at the top of the screen
+ 0000095B  66| C7 05				mov bombPos.y, 5      ; Start at the top of the screen
 	   00000280 R
 	   0005
 						
- 00000946				bombDrop:
- 00000946  66| FF 05				inc bombPos.y ; drop 
+ 00000964				bombDrop:
+ 00000964  66| FF 05				inc bombPos.y ; drop 
 	   00000280 R
 
- 0000094D			    checkBombFlag:
- 0000094D  66| 83 3D		        cmp bombFlag,7
+ 0000096B			    checkBombFlag:
+ 0000096B  66| 83 3D		        cmp bombFlag,7
 	   00000294 R 07
- 00000955  7C 0B		        jl endBombDraw
+ 00000973  7C 0B		        jl endBombDraw
 						
- 00000957					resetBombFlag:
- 00000957  66| C7 05					mov bombFlag,0
+ 00000975					resetBombFlag:
+ 00000975  66| C7 05					mov bombFlag,0
 	   00000294 R
 	   0000
 							;mov bombPos.x, 77   
 							;mov bombPos.y, 5      ; Start at the top of the screen
- 00000960  EB 00					jmp EndBombDraw
+ 0000097E  EB 00					jmp EndBombDraw
 						
- 00000962				EndBombDraw:
+ 00000980				EndBombDraw:
 					
 					
 				        ; Handle input
 				        INVOKE GetAsyncKeyState, VK_LEFT
- 00000969  66| A9 8000		        test ax, 8000h
- 0000096D  74 14		        jz checkRight
- 0000096F  66| 83 3D		        cmp airplanePos.x, MarginSize ; If airplanePos.x is at the left edge of the screen, do not move right
+ 00000987  66| A9 8000		        test ax, 8000h
+ 0000098B  74 14		        jz checkRight
+ 0000098D  66| 83 3D		        cmp airplanePos.x, MarginSize ; If airplanePos.x is at the left edge of the screen, do not move right
 	   00000038 R 0F
- 00000977  7E 0A		        jle checkRight
- 00000979  66| 83 2D		        sub airplanePos.x, 2
+ 00000995  7E 0A		        jle checkRight
+ 00000997  66| 83 2D		        sub airplanePos.x, 2
 	   00000038 R 02
- 00000981  EB 21		        jmp checkShoot
+ 0000099F  EB 21		        jmp checkShoot
 
- 00000983			    checkRight:
+ 000009A1			    checkRight:
 				        INVOKE GetAsyncKeyState, VK_RIGHT
- 0000098A  66| A9 8000		        test ax, 8000h
- 0000098E  74 14		        jz checkShoot
- 00000990  66| 83 3D		        cmp airplanePos.x, ScreenWidth - MarginSize - 10; If airplanePos.x is at the right edge of the screen, do not move right
+ 000009A8  66| A9 8000		        test ax, 8000h
+ 000009AC  74 14		        jz checkShoot
+ 000009AE  66| 83 3D		        cmp airplanePos.x, ScreenWidth - MarginSize - 10; If airplanePos.x is at the right edge of the screen, do not move right
 	   00000038 R 69
- 00000998  7D 0A		        jge checkShoot
- 0000099A  66| 83 05		        add airplanePos.x, 2
+ 000009B6  7D 0A		        jge checkShoot
+ 000009B8  66| 83 05		        add airplanePos.x, 2
 	   00000038 R 02
- 000009A2  EB 00		        jmp checkShoot
+ 000009C0  EB 00		        jmp checkShoot
 						
 						
 						
- 000009A4				checkShoot:
+ 000009C2				checkShoot:
 				        INVOKE GetAsyncKeyState, VK_SPACE
- 000009AB  66| A9 8000		        test ax, 8000h
- 000009AF  74 2B		        jz updateBullet
- 000009B1  66| 8B 1D		        mov bx, airplanePos.x
+ 000009C9  66| A9 8000		        test ax, 8000h
+ 000009CD  74 2B		        jz updateBullet
+ 000009CF  66| 8B 1D		        mov bx, airplanePos.x
 	   00000038 R
- 000009B8  66| 83 C3 05		        add bx, 5 ; Adjust bullet position x
- 000009BC  66| 89 1D		        mov bulletPos.x, bx
+ 000009D6  66| 83 C3 05		        add bx, 5 ; Adjust bullet position x
+ 000009DA  66| 89 1D		        mov bulletPos.x, bx
 	   0000003C R
- 000009C3  66| 8B 1D		        mov bx, airplanePos.y
+ 000009E1  66| 8B 1D		        mov bx, airplanePos.y
 	   0000003A R
- 000009CA  66| 83 EB 03		        sub bx, 3 ; Adjust bullet position y
- 000009CE  66| 89 1D		        mov bulletPos.y, bx
+ 000009E8  66| 83 EB 03		        sub bx, 3 ; Adjust bullet position y
+ 000009EC  66| 89 1D		        mov bulletPos.y, bx
 	   0000003E R
- 000009D5  66| FF 0D		        dec bulletPos.y
+ 000009F3  66| FF 0D		        dec bulletPos.y
 	   0000003E R
 
- 000009DC			    updateBullet:
+ 000009FA			    updateBullet:
 				        ; Update bullet position
- 000009DC  66| 83 3D		        cmp bulletPos.y, 0
+ 000009FA  66| 83 3D		        cmp bulletPos.y, 0
 	   0000003E R 00
- 000009E4  74 07		        je endUpdate
- 000009E6  66| FF 0D		        dec bulletPos.y
+ 00000A02  74 07		        je endUpdate
+ 00000A04  66| FF 0D		        dec bulletPos.y
 	   0000003E R
- 000009ED			    endUpdate:
+ 00000A0B			    endUpdate:
 
 				        ; Delay for a short period
 				        INVOKE Sleep, 50
 						
 				    ; Check if plane hit bomb
- 000009F4				checkGetBomb:    
- 000009F4  66| 83 3D		        cmp bombPos.y, ScreenHeight-5 
+ 00000A12				checkGetBomb:    
+ 00000A12  66| 83 3D		        cmp bombPos.y, ScreenHeight-5 
 	   00000280 R 19
- 000009FC  7C 7D		        jl checkGetAddLife  ;skip
- 000009FE  66| A1				mov ax, airplanePos.x
+ 00000A1A  7C 7D		        jl checkGetAddLife  ;skip
+ 00000A1C  66| A1				mov ax, airplanePos.x
 	   00000038 R
- 00000A04  66| 83 E8 01		        sub ax, 1
- 00000A08  66| 39 05		        cmp bombPos.x, ax 
+ 00000A22  66| 83 E8 01		        sub ax, 1
+ 00000A26  66| 39 05		        cmp bombPos.x, ax 
 	   0000027E R
- 00000A0F  7C 6A		        jl checkGetAddLife ; skip
- 00000A11  66| A1		        mov ax, airplanePos.x
+ 00000A2D  7C 6A		        jl checkGetAddLife ; skip
+ 00000A2F  66| A1		        mov ax, airplanePos.x
 	   00000038 R
- 00000A17  66| 83 C0 0A		        add ax, 10
- 00000A1B  66| 39 05		        cmp bombPos.x, ax 
+ 00000A35  66| 83 C0 0A		        add ax, 10
+ 00000A39  66| 39 05		        cmp bombPos.x, ax 
 	   0000027E R
- 00000A22  7F 57		        jg checkGetAddLife ; skip
- 00000A24  83 2D 00000401 R	        sub life,2   
+ 00000A40  7F 57		        jg checkGetAddLife ; skip
+ 00000A42  83 2D 00000401 R	        sub life,2   
 	   02
- 00000A2B  83 3D 00000401 R	        cmp life,0
+ 00000A49  83 3D 00000401 R	        cmp life,0
 	   00
- 00000A32  7D 0A		        jge skipSetLifeZero
- 00000A34  C7 05 00000401 R	        mov life,0
+ 00000A50  7D 0A		        jge skipSetLifeZero
+ 00000A52  C7 05 00000401 R	        mov life,0
 	   00000000
 
- 00000A3E			    skipSetLifeZero:
- 00000A3E  66| 83 3D				cmp bombFlag,7
+ 00000A5C			    skipSetLifeZero:
+ 00000A5C  66| 83 3D				cmp bombFlag,7
 	   00000294 R 07
- 00000A46  7D 2A				jge resetBombFlag3
- 00000A48  0F B7 1D				movzx ebx ,bombFlag
+ 00000A64  7D 2A				jge resetBombFlag3
+ 00000A66  0F B7 1D				movzx ebx ,bombFlag
 	   00000294 R
- 00000A4F  D1 E3				shl ebx, 1  ;mul by 2
- 00000A51  BE 00000284 R			mov esi, OFFSET dropBombPos
- 00000A56  66| FF 05				inc bombFlag 
+ 00000A6D  D1 E3				shl ebx, 1  ;mul by 2
+ 00000A6F  BE 00000284 R			mov esi, OFFSET dropBombPos
+ 00000A74  66| FF 05				inc bombFlag 
 	   00000294 R
- 00000A5D  66| 8B 04 1E				mov ax,[esi+ebx]
- 00000A61  66| A3				mov bombPos.x, ax 
+ 00000A7B  66| 8B 04 1E				mov ax,[esi+ebx]
+ 00000A7F  66| A3				mov bombPos.x, ax 
 	   0000027E R
- 00000A67  66| C7 05				mov bombPos.y, 5  
+ 00000A85  66| C7 05				mov bombPos.y, 5  
 	   00000280 R
 	   0005
 						
- 00000A70  EB 09				jmp checkGetAddLife
+ 00000A8E  EB 09				jmp checkGetAddLife
 						
- 00000A72					resetBombFlag3:
- 00000A72  66| C7 05					mov bombFlag,0
+ 00000A90					resetBombFlag3:
+ 00000A90  66| C7 05					mov bombFlag,0
 	   00000294 R
 	   0000
 							;mov bombPos.x, 54
 							;mov bombPos.y, 5 
 							
 				   
- 00000A7B			    checkGetAddLife:    
- 00000A7B  66| 83 3D		        cmp addLifePos.y, ScreenHeight-5 
+ 00000A99			    checkGetAddLife:    
+ 00000A99  66| 83 3D		        cmp addLifePos.y, ScreenHeight-5 
 	   00000267 R 19
- 00000A83  7C 7C		        jl checkEnemyCollision1 
- 00000A85  66| A1				mov ax, airplanePos.x
+ 00000AA1  7C 7C		        jl checkEnemyCollision1 
+ 00000AA3  66| A1				mov ax, airplanePos.x
 	   00000038 R
- 00000A8B  66| 83 E8 01		        sub ax, 1
- 00000A8F  66| 39 05		        cmp addLifePos.x, ax 
+ 00000AA9  66| 83 E8 01		        sub ax, 1
+ 00000AAD  66| 39 05		        cmp addLifePos.x, ax 
 	   00000265 R
- 00000A96  7C 69		        jl checkEnemyCollision1 ; skip
- 00000A98  66| A1		        mov ax, airplanePos.x
+ 00000AB4  7C 69		        jl checkEnemyCollision1 ; skip
+ 00000AB6  66| A1		        mov ax, airplanePos.x
 	   00000038 R
- 00000A9E  66| 83 C0 0A		        add ax, 10
- 00000AA2  66| 39 05		        cmp addLifePos.x, ax 
+ 00000ABC  66| 83 C0 0A		        add ax, 10
+ 00000AC0  66| 39 05		        cmp addLifePos.x, ax 
 	   00000265 R
- 00000AA9  7F 56		        jg checkEnemyCollision1 ; skip
- 00000AAB  FF 05 00000401 R	        inc life
- 00000AB1  83 3D 00000401 R	        cmp life,3
+ 00000AC7  7F 56		        jg checkEnemyCollision1 ; skip
+ 00000AC9  FF 05 00000401 R	        inc life
+ 00000ACF  83 3D 00000401 R	        cmp life,3
 	   03
- 00000AB8  7E 0A		        jle skipSetLifeThree
- 00000ABA  C7 05 00000401 R	        mov life,3
+ 00000AD6  7E 0A		        jle skipSetLifeThree
+ 00000AD8  C7 05 00000401 R	        mov life,3
 	   00000003
 
- 00000AC4			    skipSetLifeThree:
- 00000AC4  66| 83 3D				cmp addLifeFlag,7
+ 00000AE2			    skipSetLifeThree:
+ 00000AE2  66| 83 3D				cmp addLifeFlag,7
 	   0000027B R 07
- 00000ACC  7D 2A				jge resetFlag2
- 00000ACE  0F B7 1D				movzx ebx ,addLifeFlag
+ 00000AEA  7D 2A				jge resetFlag2
+ 00000AEC  0F B7 1D				movzx ebx ,addLifeFlag
 	   0000027B R
- 00000AD5  D1 E3				shl ebx, 1  ;mul by 2
- 00000AD7  BE 0000026B R			mov esi, OFFSET dropAddLifePos
- 00000ADC  66| FF 05				inc addLifeFlag
+ 00000AF3  D1 E3				shl ebx, 1  ;mul by 2
+ 00000AF5  BE 0000026B R			mov esi, OFFSET dropAddLifePos
+ 00000AFA  66| FF 05				inc addLifeFlag
 	   0000027B R
- 00000AE3  66| 8B 04 1E				mov ax,[esi+ebx]
- 00000AE7  66| A3				mov addLifePos.x, ax 
+ 00000B01  66| 8B 04 1E				mov ax,[esi+ebx]
+ 00000B05  66| A3				mov addLifePos.x, ax 
 	   00000265 R
- 00000AED  66| C7 05				mov addLifePos.y, 5  
+ 00000B0B  66| C7 05				mov addLifePos.y, 5  
 	   00000267 R
 	   0005
 						
- 00000AF6  EB 09				jmp checkEnemyCollision1   
+ 00000B14  EB 09				jmp checkEnemyCollision1   
 						
- 00000AF8					resetFlag2:
- 00000AF8  66| C7 05					mov addLifeFlag,0
+ 00000B16					resetFlag2:
+ 00000B16  66| C7 05					mov addLifeFlag,0
 	   0000027B R
 	   0000
 							;mov cx,dropAddLifePos
@@ -886,310 +896,310 @@ main.asm						     Page 1 - 1
 							;mov addLifePos.y, 5 
 					
 					; Check if airplane is shot
- 00000B01			    checkEnemyCollision1:    
- 00000B01  80 3D 00000121 R	        cmp enemyActive1, 0 ; If equal, enemy1 already died
+ 00000B1F			    checkEnemyCollision1:    
+ 00000B1F  80 3D 00000121 R	        cmp enemyActive1, 0 ; If equal, enemy1 already died
 	   00
- 00000B08  74 48		        je checkEnemyCollision2
- 00000B0A  66| 83 3D		       cmp enemyBulletPos1.y, ScreenHeight-5 ; Check1: enemyBullet.y and plane.y
+ 00000B26  74 48		        je checkEnemyCollision2
+ 00000B28  66| 83 3D		       cmp enemyBulletPos1.y, ScreenHeight-5 ; Check1: enemyBullet.y and plane.y
 	   00000107 R 19
- 00000B12  7C 3E		        jl checkEnemyCollision2 ; Bullet still up in sky, skip
- 00000B14  66| A1		        mov ax, airplanePos.x
+ 00000B30  7C 3E		        jl checkEnemyCollision2 ; Bullet still up in sky, skip
+ 00000B32  66| A1		        mov ax, airplanePos.x
 	   00000038 R
- 00000B1A  66| 83 E8 01		        sub ax, 1
- 00000B1E  66| 39 05		        cmp enemyBulletPos1.x, ax ; Check2: enemyBullet.x is between the range of plane.x
+ 00000B38  66| 83 E8 01		        sub ax, 1
+ 00000B3C  66| 39 05		        cmp enemyBulletPos1.x, ax ; Check2: enemyBullet.x is between the range of plane.x
 	   00000105 R
- 00000B25  7C 2B		        jl checkEnemyCollision2 ; skip
- 00000B27  66| A1		        mov ax, airplanePos.x
+ 00000B43  7C 2B		        jl checkEnemyCollision2 ; skip
+ 00000B45  66| A1		        mov ax, airplanePos.x
 	   00000038 R
- 00000B2D  66| 83 C0 0A		        add ax, 10
- 00000B31  66| 39 05		        cmp enemyBulletPos1.x, ax ; Check3: enemyBullet.x is between the range of plane.x
+ 00000B4B  66| 83 C0 0A		        add ax, 10
+ 00000B4F  66| 39 05		        cmp enemyBulletPos1.x, ax ; Check3: enemyBullet.x is between the range of plane.x
 	   00000105 R
- 00000B38  7F 18		        jg checkEnemyCollision2 ; skip
- 00000B3A  FF 0D 00000401 R	        dec life    ; If no skip, then collision happen
- 00000B40  66| C7 05		        mov enemyBulletPos1.x, 30 ; Reset enemyBullet1 position
+ 00000B56  7F 18		        jg checkEnemyCollision2 ; skip
+ 00000B58  FF 0D 00000401 R	        dec life    ; If no skip, then collision happen
+ 00000B5E  66| C7 05		        mov enemyBulletPos1.x, 30 ; Reset enemyBullet1 position
 	   00000105 R
 	   001E
- 00000B49  66| C7 05		        mov enemyBulletPos1.y, 5
+ 00000B67  66| C7 05		        mov enemyBulletPos1.y, 5
 	   00000107 R
 	   0005
 				  
 
- 00000B52			    checkEnemyCollision2:
- 00000B52  80 3D 00000122 R	    cmp enemyActive2, 0 ; If equal, enemy2 already died
+ 00000B70			    checkEnemyCollision2:
+ 00000B70  80 3D 00000122 R	    cmp enemyActive2, 0 ; If equal, enemy2 already died
 	   00
- 00000B59  74 48		        je checkEnemyCollision3
- 00000B5B  66| 83 3D		        cmp enemyBulletPos2.y, ScreenHeight-5 ; Check1: enemyBullet.y and plane.y
+ 00000B77  74 48		        je checkEnemyCollision3
+ 00000B79  66| 83 3D		        cmp enemyBulletPos2.y, ScreenHeight-5 ; Check1: enemyBullet.y and plane.y
 	   0000010F R 19
- 00000B63  7C 3E		        jl checkEnemyCollision3 ; Bullet still up in sky, skip
- 00000B65  66| A1		        mov ax, airplanePos.x
+ 00000B81  7C 3E		        jl checkEnemyCollision3 ; Bullet still up in sky, skip
+ 00000B83  66| A1		        mov ax, airplanePos.x
 	   00000038 R
- 00000B6B  66| 83 E8 01		        sub ax, 1
- 00000B6F  66| 39 05		        cmp enemyBulletPos2.x, ax ; Check2: enemyBullet.x is between the range of plane.x
+ 00000B89  66| 83 E8 01		        sub ax, 1
+ 00000B8D  66| 39 05		        cmp enemyBulletPos2.x, ax ; Check2: enemyBullet.x is between the range of plane.x
 	   0000010D R
- 00000B76  7C 2B		        jl checkEnemyCollision3 ; skip
- 00000B78  66| A1		        mov ax, airplanePos.x
+ 00000B94  7C 2B		        jl checkEnemyCollision3 ; skip
+ 00000B96  66| A1		        mov ax, airplanePos.x
 	   00000038 R
- 00000B7E  66| 83 C0 0A		        add ax, 10
- 00000B82  66| 39 05		        cmp enemyBulletPos2.x, ax ; Check3: enemyBullet.x is between the range of plane.x
+ 00000B9C  66| 83 C0 0A		        add ax, 10
+ 00000BA0  66| 39 05		        cmp enemyBulletPos2.x, ax ; Check3: enemyBullet.x is between the range of plane.x
 	   0000010D R
- 00000B89  7F 18		        jg checkEnemyCollision3 ; skip
- 00000B8B  FF 0D 00000401 R	        dec life    ; If no skip, then collision happen
- 00000B91  66| C7 05		        mov enemyBulletPos2.x, 50 ; Reset enemyBullet2 position
+ 00000BA7  7F 18		        jg checkEnemyCollision3 ; skip
+ 00000BA9  FF 0D 00000401 R	        dec life    ; If no skip, then collision happen
+ 00000BAF  66| C7 05		        mov enemyBulletPos2.x, 50 ; Reset enemyBullet2 position
 	   0000010D R
 	   0032
- 00000B9A  66| C7 05		        mov enemyBulletPos2.y, 5
+ 00000BB8  66| C7 05		        mov enemyBulletPos2.y, 5
 	   0000010F R
 	   0005
 
- 00000BA3			    checkEnemyCollision3:
- 00000BA3  80 3D 00000123 R	    cmp enemyActive3, 0 ; If equal, enemy3 already died
+ 00000BC1			    checkEnemyCollision3:
+ 00000BC1  80 3D 00000123 R	    cmp enemyActive3, 0 ; If equal, enemy3 already died
 	   00
- 00000BAA  74 48		        je checkEnemyCollision4
- 00000BAC  66| 83 3D		        cmp enemyBulletPos3.y, ScreenHeight-5 ; Check1: enemyBullet.y and plane.y
+ 00000BC8  74 48		        je checkEnemyCollision4
+ 00000BCA  66| 83 3D		        cmp enemyBulletPos3.y, ScreenHeight-5 ; Check1: enemyBullet.y and plane.y
 	   00000117 R 19
- 00000BB4  7C 3E		        jl checkEnemyCollision4 ; Bullet still up in sky, skip
- 00000BB6  66| A1		        mov ax, airplanePos.x
+ 00000BD2  7C 3E		        jl checkEnemyCollision4 ; Bullet still up in sky, skip
+ 00000BD4  66| A1		        mov ax, airplanePos.x
 	   00000038 R
- 00000BBC  66| 83 E8 01		        sub ax, 1
- 00000BC0  66| 39 05		        cmp enemyBulletPos3.x, ax ; Check2: enemyBullet.x is between the range of plane.x
+ 00000BDA  66| 83 E8 01		        sub ax, 1
+ 00000BDE  66| 39 05		        cmp enemyBulletPos3.x, ax ; Check2: enemyBullet.x is between the range of plane.x
 	   00000115 R
- 00000BC7  7C 2B		        jl checkEnemyCollision4 ; skip
- 00000BC9  66| A1		        mov ax, airplanePos.x
+ 00000BE5  7C 2B		        jl checkEnemyCollision4 ; skip
+ 00000BE7  66| A1		        mov ax, airplanePos.x
 	   00000038 R
- 00000BCF  66| 83 C0 0A		        add ax, 10
- 00000BD3  66| 39 05		        cmp enemyBulletPos3.x, ax ; Check3: enemyBullet.x is between the range of plane.x
+ 00000BED  66| 83 C0 0A		        add ax, 10
+ 00000BF1  66| 39 05		        cmp enemyBulletPos3.x, ax ; Check3: enemyBullet.x is between the range of plane.x
 	   00000115 R
- 00000BDA  7F 18		        jg checkEnemyCollision4 ; skip
- 00000BDC  FF 0D 00000401 R	        dec life    ; If no skip, then collision happen
- 00000BE2  66| C7 05		        mov enemyBulletPos3.x, 80 ; Reset enemyBullet3 position
+ 00000BF8  7F 18		        jg checkEnemyCollision4 ; skip
+ 00000BFA  FF 0D 00000401 R	        dec life    ; If no skip, then collision happen
+ 00000C00  66| C7 05		        mov enemyBulletPos3.x, 80 ; Reset enemyBullet3 position
 	   00000115 R
 	   0050
- 00000BEB  66| C7 05		        mov enemyBulletPos3.y, 5
+ 00000C09  66| C7 05		        mov enemyBulletPos3.y, 5
 	   00000117 R
 	   0005
 
- 00000BF4			    checkEnemyCollision4:
- 00000BF4  80 3D 00000124 R	    cmp enemyActive4, 0 ; If equal, enemy4 already died
+ 00000C12			    checkEnemyCollision4:
+ 00000C12  80 3D 00000124 R	    cmp enemyActive4, 0 ; If equal, enemy4 already died
 	   00
- 00000BFB  74 48		        je endEnemyCollision
- 00000BFD  66| 83 3D		        cmp enemyBulletPos4.y, ScreenHeight-5 ; Check1: enemyBullet.y and plane.y
+ 00000C19  74 48		        je endEnemyCollision
+ 00000C1B  66| 83 3D		        cmp enemyBulletPos4.y, ScreenHeight-5 ; Check1: enemyBullet.y and plane.y
 	   0000011F R 19
- 00000C05  7C 3E		        jl endEnemyCollision ; Bullet still up in sky, skip
- 00000C07  66| A1		        mov ax, airplanePos.x
+ 00000C23  7C 3E		        jl endEnemyCollision ; Bullet still up in sky, skip
+ 00000C25  66| A1		        mov ax, airplanePos.x
 	   00000038 R
- 00000C0D  66| 83 E8 01		        sub ax, 1
- 00000C11  66| 39 05		        cmp enemyBulletPos4.x, ax ; Check2: enemyBullet.x is between the range of plane.x
+ 00000C2B  66| 83 E8 01		        sub ax, 1
+ 00000C2F  66| 39 05		        cmp enemyBulletPos4.x, ax ; Check2: enemyBullet.x is between the range of plane.x
 	   0000011D R
- 00000C18  7C 2B		        jl endEnemyCollision ; skip
- 00000C1A  66| A1		        mov ax, airplanePos.x
+ 00000C36  7C 2B		        jl endEnemyCollision ; skip
+ 00000C38  66| A1		        mov ax, airplanePos.x
 	   00000038 R
- 00000C20  66| 83 C0 0A		        add ax, 10
- 00000C24  66| 39 05		        cmp enemyBulletPos4.x, ax ; Check3: enemyBullet.x is between the range of plane.x
+ 00000C3E  66| 83 C0 0A		        add ax, 10
+ 00000C42  66| 39 05		        cmp enemyBulletPos4.x, ax ; Check3: enemyBullet.x is between the range of plane.x
 	   0000011D R
- 00000C2B  7F 18		        jg endEnemyCollision ; skip
- 00000C2D  FF 0D 00000401 R	        dec life    ; If no skip, then collision happen
- 00000C33  66| C7 05		        mov enemyBulletPos4.x, 100 ; Reset enemyBullet4 position
+ 00000C49  7F 18		        jg endEnemyCollision ; skip
+ 00000C4B  FF 0D 00000401 R	        dec life    ; If no skip, then collision happen
+ 00000C51  66| C7 05		        mov enemyBulletPos4.x, 100 ; Reset enemyBullet4 position
 	   0000011D R
 	   0064
- 00000C3C  66| C7 05		        mov enemyBulletPos4.y, 5
+ 00000C5A  66| C7 05		        mov enemyBulletPos4.y, 5
 	   0000011F R
 	   0005
- 00000C45			    endEnemyCollision:
+ 00000C63			    endEnemyCollision:
 				              
 				    
 				    ;Check if enemy1 is shot
- 00000C45			    checkBulletCollision1:
- 00000C45  66| 83 3D		        cmp bulletPos.y, 5 ; If bullet is at the top of the screen, skip
+ 00000C63			    checkBulletCollision1:
+ 00000C63  66| 83 3D		        cmp bulletPos.y, 5 ; If bullet is at the top of the screen, skip
 	   0000003E R 05
- 00000C4D  75 2C		        jne checkBulletCollision2
- 00000C4F  B9 00000008		        mov ecx,8
- 00000C54  66| A1				mov ax, enemyPos1.x
+ 00000C6B  75 2C		        jne checkBulletCollision2
+ 00000C6D  B9 00000008		        mov ecx,8
+ 00000C72  66| A1				mov ax, enemyPos1.x
 	   00000101 R
- 00000C5A					L1:
- 00000C5A  66| 39 05					cmp bulletPos.x, ax ; Check1: bullet.x and enemy.x
+ 00000C78					L1:
+ 00000C78  66| 39 05					cmp bulletPos.x, ax ; Check1: bullet.x and enemy.x
 	   0000003C R
- 00000C61  74 06					je bulletHitEnemy1 ; skip
- 00000C63  66| 40					inc ax
- 00000C65  E2 F3					loop L1
- 00000C67  EB 12					jmp checkBulletCollision2
- 00000C69					bulletHitEnemy1:
- 00000C69  C6 05 00000121 R				mov enemyActive1, 0 ; If no skip, then collision happen, enemy2 died
+ 00000C7F  74 06					je bulletHitEnemy1 ; skip
+ 00000C81  66| 40					inc ax
+ 00000C83  E2 F3					loop L1
+ 00000C85  EB 12					jmp checkBulletCollision2
+ 00000C87					bulletHitEnemy1:
+ 00000C87  C6 05 00000121 R				mov enemyActive1, 0 ; If no skip, then collision happen, enemy2 died
 	   00
- 00000C70  66| C7 05					mov bulletPos.y, 0 ; Reset bullet position
+ 00000C8E  66| C7 05					mov bulletPos.y, 0 ; Reset bullet position
 	   0000003E R
 	   0000
- 00000C79  EB 00					jmp checkBulletCollision2
+ 00000C97  EB 00					jmp checkBulletCollision2
 
 				    ; Check if enemy2 is shot
- 00000C7B			    checkBulletCollision2:
- 00000C7B  66| 83 3D		        cmp bulletPos.y, 5 ; If bullet is at the top of the screen, skip
+ 00000C99			    checkBulletCollision2:
+ 00000C99  66| 83 3D		        cmp bulletPos.y, 5 ; If bullet is at the top of the screen, skip
 	   0000003E R 05
- 00000C83  75 2C		        jne checkBulletCollision3
- 00000C85  B9 00000009				mov ecx,9
- 00000C8A  66| A1				mov ax, enemyPos2.x
+ 00000CA1  75 2C		        jne checkBulletCollision3
+ 00000CA3  B9 00000009				mov ecx,9
+ 00000CA8  66| A1				mov ax, enemyPos2.x
 	   00000109 R
- 00000C90					L2:
- 00000C90  66| 39 05					cmp bulletPos.x, ax ; Check1: bullet.x and enemy.x
+ 00000CAE					L2:
+ 00000CAE  66| 39 05					cmp bulletPos.x, ax ; Check1: bullet.x and enemy.x
 	   0000003C R
- 00000C97  74 06					je bulletHitEnemy2 ; skip
- 00000C99  66| 40					inc ax
- 00000C9B  E2 F3					loop L2
- 00000C9D  EB 12					jmp checkBulletCollision3
- 00000C9F					bulletHitEnemy2:
- 00000C9F  C6 05 00000122 R				mov enemyActive2, 0 ; If no skip, then collision happen, enemy2 died
+ 00000CB5  74 06					je bulletHitEnemy2 ; skip
+ 00000CB7  66| 40					inc ax
+ 00000CB9  E2 F3					loop L2
+ 00000CBB  EB 12					jmp checkBulletCollision3
+ 00000CBD					bulletHitEnemy2:
+ 00000CBD  C6 05 00000122 R				mov enemyActive2, 0 ; If no skip, then collision happen, enemy2 died
 	   00
- 00000CA6  66| C7 05					mov bulletPos.y, 0 ; Reset bullet position
+ 00000CC4  66| C7 05					mov bulletPos.y, 0 ; Reset bullet position
 	   0000003E R
 	   0000
- 00000CAF  EB 00					jmp checkBulletCollision3
+ 00000CCD  EB 00					jmp checkBulletCollision3
 
 				    ; Check if enemy3 is shot
- 00000CB1			    checkBulletCollision3:
- 00000CB1  66| 83 3D		        cmp bulletPos.y, 5 ; If bullet is at the top of the screen, skip
+ 00000CCF			    checkBulletCollision3:
+ 00000CCF  66| 83 3D		        cmp bulletPos.y, 5 ; If bullet is at the top of the screen, skip
 	   0000003E R 05
- 00000CB9  75 2C		        jne checkBulletCollision4
- 00000CBB  B9 00000008		        mov ecx,8
- 00000CC0  66| A1				mov ax, enemyPos3.x
+ 00000CD7  75 2C		        jne checkBulletCollision4
+ 00000CD9  B9 00000008		        mov ecx,8
+ 00000CDE  66| A1				mov ax, enemyPos3.x
 	   00000111 R
- 00000CC6					L3:
- 00000CC6  66| 39 05					cmp bulletPos.x, ax ; Check1: bullet.x and enemy.x
+ 00000CE4					L3:
+ 00000CE4  66| 39 05					cmp bulletPos.x, ax ; Check1: bullet.x and enemy.x
 	   0000003C R
- 00000CCD  74 06					je bulletHitEnemy3 ; skip
- 00000CCF  66| 40					inc ax
- 00000CD1  E2 F3					loop L3
- 00000CD3  EB 12					jmp checkBulletCollision4
- 00000CD5					bulletHitEnemy3:
- 00000CD5  C6 05 00000123 R				mov enemyActive3, 0 ; If no skip, then collision happen, enemy2 died
+ 00000CEB  74 06					je bulletHitEnemy3 ; skip
+ 00000CED  66| 40					inc ax
+ 00000CEF  E2 F3					loop L3
+ 00000CF1  EB 12					jmp checkBulletCollision4
+ 00000CF3					bulletHitEnemy3:
+ 00000CF3  C6 05 00000123 R				mov enemyActive3, 0 ; If no skip, then collision happen, enemy2 died
 	   00
- 00000CDC  66| C7 05					mov bulletPos.y, 0 ; Reset bullet position
+ 00000CFA  66| C7 05					mov bulletPos.y, 0 ; Reset bullet position
 	   0000003E R
 	   0000
- 00000CE5  EB 00					jmp checkBulletCollision4
+ 00000D03  EB 00					jmp checkBulletCollision4
 				     
 				    ; Check if enemy4 is shot
- 00000CE7			    checkBulletCollision4:
- 00000CE7  66| 83 3D		        cmp bulletPos.y, 5 ; If bullet is at the top of the screen, skip
+ 00000D05			    checkBulletCollision4:
+ 00000D05  66| 83 3D		        cmp bulletPos.y, 5 ; If bullet is at the top of the screen, skip
 	   0000003E R 05
- 00000CEF  75 2C		        jne endBulletCollision
- 00000CF1  B9 00000008		        mov ecx,8
- 00000CF6  66| A1				mov ax, enemyPos4.x
+ 00000D0D  75 2C		        jne endBulletCollision
+ 00000D0F  B9 00000008		        mov ecx,8
+ 00000D14  66| A1				mov ax, enemyPos4.x
 	   00000119 R
- 00000CFC					L4:
- 00000CFC  66| 39 05					cmp bulletPos.x, ax ; Check1: bullet.x and enemy.x
+ 00000D1A					L4:
+ 00000D1A  66| 39 05					cmp bulletPos.x, ax ; Check1: bullet.x and enemy.x
 	   0000003C R
- 00000D03  74 06					je bulletHitEnemy4 ; skip
- 00000D05  66| 40					inc ax
- 00000D07  E2 F3					loop L4
- 00000D09  EB 12					jmp endBulletCollision
- 00000D0B					bulletHitEnemy4:
- 00000D0B  C6 05 00000124 R				mov enemyActive4, 0 ; If no skip, then collision happen, enemy2 died
+ 00000D21  74 06					je bulletHitEnemy4 ; skip
+ 00000D23  66| 40					inc ax
+ 00000D25  E2 F3					loop L4
+ 00000D27  EB 12					jmp endBulletCollision
+ 00000D29					bulletHitEnemy4:
+ 00000D29  C6 05 00000124 R				mov enemyActive4, 0 ; If no skip, then collision happen, enemy2 died
 	   00
- 00000D12  66| C7 05					mov bulletPos.y, 0 ; Reset bullet position
+ 00000D30  66| C7 05					mov bulletPos.y, 0 ; Reset bullet position
 	   0000003E R
 	   0000
- 00000D1B  EB 00					jmp endBulletCollision
- 00000D1D			    endBulletCollision:
+ 00000D39  EB 00					jmp endBulletCollision
+ 00000D3B			    endBulletCollision:
 
 				     ; If lose
- 00000D1D			    lose:
- 00000D1D  83 3D 00000401 R	        cmp life, 0
+ 00000D3B			    lose:
+ 00000D3B  83 3D 00000401 R	        cmp life, 0
 	   00
- 00000D24  0F 85 00000132	        jne checkWin
+ 00000D42  0F 85 00000132	        jne checkWin
 				        ; Draw LOSE
- 00000D2A  E8 00000000 E	        call Clrscr
+ 00000D48  E8 00000000 E	        call Clrscr
 				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR loseDraw1, LENGTHOF loseDraw1, losePos, ADDR count
- 00000D4C  66| FF 05		        inc losePos.y
+ 00000D6A  66| FF 05		        inc losePos.y
 	   00000322 R
 				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR loseDraw2, LENGTHOF loseDraw2, losePos, ADDR count
- 00000D70  66| FF 05		        inc losePos.y
+ 00000D8E  66| FF 05		        inc losePos.y
 	   00000322 R
 				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR loseDraw3, LENGTHOF loseDraw3, losePos, ADDR count
- 00000D94  66| FF 05		        inc losePos.y
+ 00000DB2  66| FF 05		        inc losePos.y
 	   00000322 R
 				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR loseDraw4, LENGTHOF loseDraw4, losePos, ADDR count
- 00000DB8  66| FF 05		        inc losePos.y
+ 00000DD6  66| FF 05		        inc losePos.y
 	   00000322 R
 				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR loseDraw5, LENGTHOF loseDraw5, losePos, ADDR count
- 00000DDC  66| 83 2D		        sub losePos.y, 4
+ 00000DFA  66| 83 2D		        sub losePos.y, 4
 	   00000322 R 04
 				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR retryDraw, LENGTHOF retryDraw, TextRetryPos, ADDR count
 				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR continueDraw, LENGTHOF continueDraw, TextContinuePos, ADDR count
 
 
- 00000E1E			        waitLoop:
+ 00000E3C			        waitLoop:
 								; 檢查是否按下enter
 								INVOKE GetAsyncKeyState, VK_RETURN  
- 00000E25  A9 00008000						test eax, 8000h                     
- 00000E2A  0F 85 0000013F					jnz skipSleep                     
+ 00000E43  A9 00008000						test eax, 8000h                     
+ 00000E48  0F 85 0000013F					jnz skipSleep                     
 
 				                INVOKE GetAsyncKeyState, VK_SPACE
- 00000E37  A9 00008000						test eax, 8000h                     
- 00000E3C  0F 85 FFFFF1DA					jnz continuePlay      
+ 00000E55  A9 00008000						test eax, 8000h                     
+ 00000E5A  0F 85 FFFFF1BC					jnz continuePlay      
 
 								; 如果沒有按鍵，則執行睡眠
 								INVOKE Sleep, 100                 
- 00000E49  81 E9 00002710					sub ecx, 10000                        
- 00000E4F  0F 84 0000011F					jz exitGame                      
- 00000E55  75 C7						jnz waitLoop   
- 00000E57  E9 00000118		        jmp exitGame
+ 00000E67  81 E9 00002710					sub ecx, 10000                        
+ 00000E6D  0F 84 0000011F					jz exitGame                      
+ 00000E73  75 C7						jnz waitLoop   
+ 00000E75  E9 00000118		        jmp exitGame
 
 
 				    ; If win
- 00000E5C			    checkWin:
+ 00000E7A			    checkWin:
 				        ; Are all enemies died
- 00000E5C  A0 00000121 R	        mov al, enemyActive1
- 00000E61  0A 05 00000122 R	        or al, enemyActive2
- 00000E67  0A 05 00000123 R	        or al, enemyActive3
- 00000E6D  0A 05 00000124 R	        or al, enemyActive4
- 00000E73  3C 00		        cmp al,0
- 00000E75  0F 85 FFFFF3D0	        jne gameLoop
+ 00000E7A  A0 00000121 R	        mov al, enemyActive1
+ 00000E7F  0A 05 00000122 R	        or al, enemyActive2
+ 00000E85  0A 05 00000123 R	        or al, enemyActive3
+ 00000E8B  0A 05 00000124 R	        or al, enemyActive4
+ 00000E91  3C 00		        cmp al,0
+ 00000E93  0F 85 FFFFF3D0	        jne gameLoop
 				   
 				        ; Draw "WIN!"
- 00000E7B  E8 00000000 E	        call Clrscr
+ 00000E99  E8 00000000 E	        call Clrscr
 
 				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR winDraw1, LENGTHOF winDraw1, winPos, ADDR count
- 00000E9D  66| FF 05		        inc winPos.y
+ 00000EBB  66| FF 05		        inc winPos.y
 	   00000298 R
 				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR winDraw2, LENGTHOF winDraw2, winPos, ADDR count
- 00000EC1  66| FF 05		        inc winPos.y
+ 00000EDF  66| FF 05		        inc winPos.y
 	   00000298 R
 				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR winDraw3, LENGTHOF winDraw3, winPos, ADDR count
- 00000EE5  66| FF 05		        inc winPos.y
+ 00000F03  66| FF 05		        inc winPos.y
 	   00000298 R
 				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR winDraw4, LENGTHOF winDraw4, winPos, ADDR count
- 00000F09  66| FF 05		        inc winPos.y
+ 00000F27  66| FF 05		        inc winPos.y
 	   00000298 R
 				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR winDraw5, LENGTHOF winDraw5, winPos, ADDR count      
- 00000F2D  66| 83 2D		        sub winPos.y, 4
+ 00000F4B  66| 83 2D		        sub winPos.y, 4
 	   00000298 R 04
 
 				        INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR retryDraw, LENGTHOF retryDraw, TextRetryPos, ADDR count
 
- 00000F52			        waitLoop2:
+ 00000F70			        waitLoop2:
 								; 檢查是否按下enter
 								INVOKE GetAsyncKeyState, VK_RETURN  
- 00000F59  A9 00008000						test eax, 8000h                     
- 00000F5E  75 0F						jnz skipSleep                     
+ 00000F77  A9 00008000						test eax, 8000h                     
+ 00000F7C  75 0F						jnz skipSleep                     
 
 								; 如果沒有按鍵，則執行睡眠
 								INVOKE Sleep, 100                 
 								;sub ecx, 10000       ; 減少剩餘時間
- 00000F67  74 0B						jz exitGame                      
- 00000F69  0F 85 FFFFFEAF					jnz waitLoop   
+ 00000F85  74 0B						jz exitGame                      
+ 00000F87  0F 85 FFFFFEAF					jnz waitLoop   
 				        ;jmp exitGame
 				   
 
- 00000F6F			   skipSleep:
- 00000F6F  E9 FFFFF08C					jmp againLoop
+ 00000F8D			   skipSleep:
+ 00000F8D  E9 FFFFF06E					jmp againLoop
 				            
- 00000F74			    exitGame:
+ 00000F92			    exitGame:
 				        exit
 
- 00000F7B			main ENDP
+ 00000F99			main ENDP
 
 				END main
 
-Microsoft (R) Macro Assembler Version 14.42.34435.0	    12/28/24 17:54:14
+Microsoft (R) Macro Assembler Version 14.42.34435.0	    12/28/24 23:16:35
 main.asm						     Symbols 2 - 1
 
 
@@ -1284,7 +1294,7 @@ Segments and Groups:
 FLAT . . . . . . . . . . . . . .	GROUP
 STACK  . . . . . . . . . . . . .	32 Bit	 00001000 Para	  Stack	  'STACK'	 
 _DATA  . . . . . . . . . . . . .	32 Bit	 0000041B Para	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 00000F7B Para	  Public  'CODE'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 00000F99 Para	  Public  'CODE'	
 
 
 Procedures, parameters, and locals:
@@ -1396,75 +1406,75 @@ WriteToFile  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 WriteWindowsMsg  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 printf . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 scanf  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
-start@0  . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000F7B Public STDCALL
+start@0  . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000F99 Public STDCALL
   againLoop  . . . . . . . . . .	L Near	 00000000 _TEXT	
   continuePlay . . . . . . . . .	L Near	 0000001C _TEXT	
   WaitForStart . . . . . . . . .	L Near	 000001DD _TEXT	
-  continue . . . . . . . . . . .	L Near	 0000023E _TEXT	
-  gameLoop . . . . . . . . . . .	L Near	 0000024B _TEXT	
-  DrawBoundaryLeft . . . . . . .	L Near	 0000026B _TEXT	
-  DrawBoundaryRight  . . . . . .	L Near	 0000029B _TEXT	
-  EndBoundaryDrawing . . . . . .	L Near	 000002CB _TEXT	
-  drawlife3  . . . . . . . . . .	L Near	 000002E6 _TEXT	
-  drawlife2  . . . . . . . . . .	L Near	 00000305 _TEXT	
-  drawlife1  . . . . . . . . . .	L Near	 00000324 _TEXT	
-  drawAirplane . . . . . . . . .	L Near	 00000343 _TEXT	
-  skipBullet . . . . . . . . . .	L Near	 00000426 _TEXT	
-  drawenemy1 . . . . . . . . . .	L Near	 00000426 _TEXT	
-  bulletdrop1  . . . . . . . . .	L Near	 0000052A _TEXT	
-  drawEnemy2 . . . . . . . . . .	L Near	 00000531 _TEXT	
-  bulletdrop2  . . . . . . . . .	L Near	 00000635 _TEXT	
-  drawEnemy3 . . . . . . . . . .	L Near	 0000063C _TEXT	
-  bulletdrop3  . . . . . . . . .	L Near	 00000740 _TEXT	
-  drawEnemy4 . . . . . . . . . .	L Near	 00000747 _TEXT	
-  bulletdrop4  . . . . . . . . .	L Near	 0000084B _TEXT	
-  endDrawEnemies . . . . . . . .	L Near	 00000852 _TEXT	
-  drawAddLife  . . . . . . . . .	L Near	 00000852 _TEXT	
-  setNewAddLifePos . . . . . . .	L Near	 00000896 _TEXT	
-  addingLifeDrop . . . . . . . .	L Near	 000008BE _TEXT	
-  checkAddLifeFlag . . . . . . .	L Near	 000008C5 _TEXT	
-  resetAddLifeFlag . . . . . . .	L Near	 000008CF _TEXT	
-  EndDrawAddLife . . . . . . . .	L Near	 000008DA _TEXT	
-  BombDraw . . . . . . . . . . .	L Near	 000008DA _TEXT	
-  setNewBombPos  . . . . . . . .	L Near	 0000091E _TEXT	
-  bombDrop . . . . . . . . . . .	L Near	 00000946 _TEXT	
-  checkBombFlag  . . . . . . . .	L Near	 0000094D _TEXT	
-  resetBombFlag  . . . . . . . .	L Near	 00000957 _TEXT	
-  EndBombDraw  . . . . . . . . .	L Near	 00000962 _TEXT	
-  checkRight . . . . . . . . . .	L Near	 00000983 _TEXT	
-  checkShoot . . . . . . . . . .	L Near	 000009A4 _TEXT	
-  updateBullet . . . . . . . . .	L Near	 000009DC _TEXT	
-  endUpdate  . . . . . . . . . .	L Near	 000009ED _TEXT	
-  checkGetBomb . . . . . . . . .	L Near	 000009F4 _TEXT	
-  skipSetLifeZero  . . . . . . .	L Near	 00000A3E _TEXT	
-  resetBombFlag3 . . . . . . . .	L Near	 00000A72 _TEXT	
-  checkGetAddLife  . . . . . . .	L Near	 00000A7B _TEXT	
-  skipSetLifeThree . . . . . . .	L Near	 00000AC4 _TEXT	
-  resetFlag2 . . . . . . . . . .	L Near	 00000AF8 _TEXT	
-  checkEnemyCollision1 . . . . .	L Near	 00000B01 _TEXT	
-  checkEnemyCollision2 . . . . .	L Near	 00000B52 _TEXT	
-  checkEnemyCollision3 . . . . .	L Near	 00000BA3 _TEXT	
-  checkEnemyCollision4 . . . . .	L Near	 00000BF4 _TEXT	
-  endEnemyCollision  . . . . . .	L Near	 00000C45 _TEXT	
-  checkBulletCollision1  . . . .	L Near	 00000C45 _TEXT	
-  L1 . . . . . . . . . . . . . .	L Near	 00000C5A _TEXT	
-  bulletHitEnemy1  . . . . . . .	L Near	 00000C69 _TEXT	
-  checkBulletCollision2  . . . .	L Near	 00000C7B _TEXT	
-  L2 . . . . . . . . . . . . . .	L Near	 00000C90 _TEXT	
-  bulletHitEnemy2  . . . . . . .	L Near	 00000C9F _TEXT	
-  checkBulletCollision3  . . . .	L Near	 00000CB1 _TEXT	
-  L3 . . . . . . . . . . . . . .	L Near	 00000CC6 _TEXT	
-  bulletHitEnemy3  . . . . . . .	L Near	 00000CD5 _TEXT	
-  checkBulletCollision4  . . . .	L Near	 00000CE7 _TEXT	
-  L4 . . . . . . . . . . . . . .	L Near	 00000CFC _TEXT	
-  bulletHitEnemy4  . . . . . . .	L Near	 00000D0B _TEXT	
-  endBulletCollision . . . . . .	L Near	 00000D1D _TEXT	
-  lose . . . . . . . . . . . . .	L Near	 00000D1D _TEXT	
-  waitLoop . . . . . . . . . . .	L Near	 00000E1E _TEXT	
-  checkWin . . . . . . . . . . .	L Near	 00000E5C _TEXT	
-  waitLoop2  . . . . . . . . . .	L Near	 00000F52 _TEXT	
-  skipSleep  . . . . . . . . . .	L Near	 00000F6F _TEXT	
-  exitGame . . . . . . . . . . .	L Near	 00000F74 _TEXT	
+  continue . . . . . . . . . . .	L Near	 00000258 _TEXT	
+  gameLoop . . . . . . . . . . .	L Near	 00000269 _TEXT	
+  DrawBoundaryLeft . . . . . . .	L Near	 00000289 _TEXT	
+  DrawBoundaryRight  . . . . . .	L Near	 000002B9 _TEXT	
+  EndBoundaryDrawing . . . . . .	L Near	 000002E9 _TEXT	
+  drawlife3  . . . . . . . . . .	L Near	 00000304 _TEXT	
+  drawlife2  . . . . . . . . . .	L Near	 00000323 _TEXT	
+  drawlife1  . . . . . . . . . .	L Near	 00000342 _TEXT	
+  drawAirplane . . . . . . . . .	L Near	 00000361 _TEXT	
+  skipBullet . . . . . . . . . .	L Near	 00000444 _TEXT	
+  drawenemy1 . . . . . . . . . .	L Near	 00000444 _TEXT	
+  bulletdrop1  . . . . . . . . .	L Near	 00000548 _TEXT	
+  drawEnemy2 . . . . . . . . . .	L Near	 0000054F _TEXT	
+  bulletdrop2  . . . . . . . . .	L Near	 00000653 _TEXT	
+  drawEnemy3 . . . . . . . . . .	L Near	 0000065A _TEXT	
+  bulletdrop3  . . . . . . . . .	L Near	 0000075E _TEXT	
+  drawEnemy4 . . . . . . . . . .	L Near	 00000765 _TEXT	
+  bulletdrop4  . . . . . . . . .	L Near	 00000869 _TEXT	
+  endDrawEnemies . . . . . . . .	L Near	 00000870 _TEXT	
+  drawAddLife  . . . . . . . . .	L Near	 00000870 _TEXT	
+  setNewAddLifePos . . . . . . .	L Near	 000008B4 _TEXT	
+  addingLifeDrop . . . . . . . .	L Near	 000008DC _TEXT	
+  checkAddLifeFlag . . . . . . .	L Near	 000008E3 _TEXT	
+  resetAddLifeFlag . . . . . . .	L Near	 000008ED _TEXT	
+  EndDrawAddLife . . . . . . . .	L Near	 000008F8 _TEXT	
+  BombDraw . . . . . . . . . . .	L Near	 000008F8 _TEXT	
+  setNewBombPos  . . . . . . . .	L Near	 0000093C _TEXT	
+  bombDrop . . . . . . . . . . .	L Near	 00000964 _TEXT	
+  checkBombFlag  . . . . . . . .	L Near	 0000096B _TEXT	
+  resetBombFlag  . . . . . . . .	L Near	 00000975 _TEXT	
+  EndBombDraw  . . . . . . . . .	L Near	 00000980 _TEXT	
+  checkRight . . . . . . . . . .	L Near	 000009A1 _TEXT	
+  checkShoot . . . . . . . . . .	L Near	 000009C2 _TEXT	
+  updateBullet . . . . . . . . .	L Near	 000009FA _TEXT	
+  endUpdate  . . . . . . . . . .	L Near	 00000A0B _TEXT	
+  checkGetBomb . . . . . . . . .	L Near	 00000A12 _TEXT	
+  skipSetLifeZero  . . . . . . .	L Near	 00000A5C _TEXT	
+  resetBombFlag3 . . . . . . . .	L Near	 00000A90 _TEXT	
+  checkGetAddLife  . . . . . . .	L Near	 00000A99 _TEXT	
+  skipSetLifeThree . . . . . . .	L Near	 00000AE2 _TEXT	
+  resetFlag2 . . . . . . . . . .	L Near	 00000B16 _TEXT	
+  checkEnemyCollision1 . . . . .	L Near	 00000B1F _TEXT	
+  checkEnemyCollision2 . . . . .	L Near	 00000B70 _TEXT	
+  checkEnemyCollision3 . . . . .	L Near	 00000BC1 _TEXT	
+  checkEnemyCollision4 . . . . .	L Near	 00000C12 _TEXT	
+  endEnemyCollision  . . . . . .	L Near	 00000C63 _TEXT	
+  checkBulletCollision1  . . . .	L Near	 00000C63 _TEXT	
+  L1 . . . . . . . . . . . . . .	L Near	 00000C78 _TEXT	
+  bulletHitEnemy1  . . . . . . .	L Near	 00000C87 _TEXT	
+  checkBulletCollision2  . . . .	L Near	 00000C99 _TEXT	
+  L2 . . . . . . . . . . . . . .	L Near	 00000CAE _TEXT	
+  bulletHitEnemy2  . . . . . . .	L Near	 00000CBD _TEXT	
+  checkBulletCollision3  . . . .	L Near	 00000CCF _TEXT	
+  L3 . . . . . . . . . . . . . .	L Near	 00000CE4 _TEXT	
+  bulletHitEnemy3  . . . . . . .	L Near	 00000CF3 _TEXT	
+  checkBulletCollision4  . . . .	L Near	 00000D05 _TEXT	
+  L4 . . . . . . . . . . . . . .	L Near	 00000D1A _TEXT	
+  bulletHitEnemy4  . . . . . . .	L Near	 00000D29 _TEXT	
+  endBulletCollision . . . . . .	L Near	 00000D3B _TEXT	
+  lose . . . . . . . . . . . . .	L Near	 00000D3B _TEXT	
+  waitLoop . . . . . . . . . . .	L Near	 00000E3C _TEXT	
+  checkWin . . . . . . . . . . .	L Near	 00000E7A _TEXT	
+  waitLoop2  . . . . . . . . . .	L Near	 00000F70 _TEXT	
+  skipSleep  . . . . . . . . . .	L Near	 00000F8D _TEXT	
+  exitGame . . . . . . . . . . .	L Near	 00000F92 _TEXT	
 wsprintfA  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 
 

@@ -197,11 +197,21 @@ main PROC
 
 
 
-    WaitForStart:
+        WaitForStart:
         INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR startEnemyface1, LENGTHOF startEnemyface1, startEnemyfacePos, ADDR count
+
+        ; Get current time-stamp counter value
+        rdtsc               ; edx:eax = time-stamp counter
+        
+        mov ecx, 500        ; Load divisor (5) into ecx
+        xor edx, edx        ; Clear edx (required for division)
+        div ecx             ; eax = eax / 5, edx = eax % 5 (remainder)
+
+        cmp edx, 0          ; Compare remainder (edx) with 0
+        jne continue
         
 		INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR startEnemyface2, LENGTHOF startEnemyface2, startEnemyfacePos, ADDR count
-        ;INVOKE Sleep, 250
+        INVOKE Sleep, 250
         INVOKE WriteConsoleOutputCharacter, outputHandle, ADDR startEnemyface1, LENGTHOF startEnemyface1, startEnemyfacePos, ADDR count
         INVOKE Sleep, 500
 
